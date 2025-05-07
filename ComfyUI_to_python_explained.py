@@ -118,16 +118,19 @@ from nodes import NODE_CLASS_MAPPINGS
 def main():
     import_custom_nodes()
     with torch.inference_mode():
+        ## loads Stable Diffusion model 
         checkpointloadersimple = NODE_CLASS_MAPPINGS["CheckpointLoaderSimple"]()
         checkpointloadersimple_4 = checkpointloadersimple.load_checkpoint(
             ckpt_name="sd_xl_base_1.0.safetensors"
         )
 
+        ## sets size of output image
         emptylatentimage = NODE_CLASS_MAPPINGS["EmptyLatentImage"]()
         emptylatentimage_5 = emptylatentimage.generate(
             width=1024, height=1024, batch_size=1
         )
 
+        ## load LoRA with strength of model and clip 
         loraloader = NODE_CLASS_MAPPINGS["LoraLoader"]()
         loraloader_68 = loraloader.load_lora(
             lora_name="xraylorasdxl.safetensors",
@@ -137,112 +140,151 @@ def main():
             clip=get_value_at_index(checkpointloadersimple_4, 1),
         )
 
+        ## load cliptextencode model
         cliptextencode = NODE_CLASS_MAPPINGS["CLIPTextEncode"]()
+
+        ## load positive prompt 
         cliptextencode_6 = cliptextencode.encode(
-            text="masterpiece, best quality, ultra-detailed, high resolution, sharp focus, pseudo-x-ray scan of a rabbit plush toy, revealing an anatomically plausible, realistic skeleton with detailed bones inside, medical imaging style, monochrome, grayscale, black and white, xray style",
+            text="masterpiece, best quality, ultra-detailed, high resolution, sharp focus, pseudo-x-ray scan of a plush toy, revealing an anatomically plausible, realistic skeleton with detailed bones inside, medical imaging style, monochrome, grayscale, black and white, xray style",
             clip=get_value_at_index(loraloader_68, 1),
         )
 
+        ## load negative prompt 
         cliptextencode_7 = cliptextencode.encode(
             text="worst quality, low quality, blurry, noisy, text, signature, watermark, UI, cartoon, drawing, illustration, sketch, painting, anime, 3D render, (photorealistic plush toy), (visible fabric texture), (visible stuffing), colorful, vibrant colors, toy bones, plastic bones, cartoon bones, unrealistic skeleton, bad anatomy, deformed skeleton, disfigured, mutated limbs, extra limbs, fused bones, skin, fur, organs, background clutter, multiple animals",
             clip=get_value_at_index(loraloader_68, 1),
         )
 
+        ## loads Stable Diffusion model (there are two, could be one)
         checkpointloadersimple_12 = checkpointloadersimple.load_checkpoint(
             ckpt_name="sd_xl_base_1.0.safetensors"
         )
 
+        ## load positive prompt refiner (same as normal prompt)
         cliptextencode_15 = cliptextencode.encode(
-            text="masterpiece, best quality, ultra-detailed, high resolution, sharp focus, pseudo-x-ray scan of a rabbit plush toy, revealing an anatomically plausible, realistic skeleton with detailed bones inside, medical imaging style, monochrome, grayscale, black and white, xray style",
+            text="masterpiece, best quality, ultra-detailed, high resolution, sharp focus, pseudo-x-ray scan of a plush toy, revealing an anatomically plausible, realistic skeleton with detailed bones inside, medical imaging style, monochrome, grayscale, black and white, xray style",
             clip=get_value_at_index(checkpointloadersimple_12, 1),
         )
 
+        ## load negative prompt refiner (same as normal prompt)
         cliptextencode_16 = cliptextencode.encode(
             text="worst quality, low quality, blurry, noisy, text, signature, watermark, UI, cartoon, drawing, illustration, sketch, painting, anime, 3D render, (photorealistic plush toy), (visible fabric texture), (visible stuffing), colorful, vibrant colors, toy bones, plastic bones, cartoon bones, unrealistic skeleton, bad anatomy, deformed skeleton, disfigured, mutated limbs, extra limbs, fused bones, skin, fur, organs, background clutter, multiple animals",
             clip=get_value_at_index(checkpointloadersimple_12, 1),
         )
 
+        ## define loadimage
         loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
+        
+        ## input image
         loadimage_50 = loadimage.load_image(
             image="f693e789-a5a9-4430-b33e-fe2597e9cb9e.jpg"
         )
 
+        ## unconnected vae loader (unnecessary)?
         vaeencode = NODE_CLASS_MAPPINGS["VAEEncode"]()
         vaeencode_51 = vaeencode.encode(
             pixels=get_value_at_index(loadimage_50, 0),
             vae=get_value_at_index(checkpointloadersimple_4, 2),
         )
 
+        ## controlnet loader
         controlnetloader = NODE_CLASS_MAPPINGS["ControlNetLoader"]()
         controlnetloader_52 = controlnetloader.load_controlnet(
             control_net_name="SDXL/controlnet-union-sdxl-1.0/diffusion_pytorch_model_promax.safetensors"
         )
 
+        ## load reference image 
         loadimage_60 = loadimage.load_image(
             image="4139a1d1-9769-45f6-a96e-646496617f24.jpg"
         )
 
+        ## load reference image 
         loadimage_64 = loadimage.load_image(
             image="f6fcd01d-3e55-40ed-adb0-8e17e1a7531a.jpg"
         )
 
+
+        ## load reference image 
         loadimage_71 = loadimage.load_image(
             image="f0dc608d-3848-4fd4-83c4-a7e1dddc1d9b.jpg"
         )
 
+        ## load reference image 
         loadimage_72 = loadimage.load_image(
             image="cce1254a-26e0-47b9-886e-1f7f6447251e.jpg"
         )
 
+        ## load reference image 
         loadimage_74 = loadimage.load_image(
             image="90a78a86-a2e5-43ec-ad0c-e0d2a72cfb6e.jpg"
         )
 
+        ## load reference image 
         loadimage_77 = loadimage.load_image(
             image="63d047d3-6544-477a-8188-c3a5904db5a4.jpg"
         )
 
+        ## load ipadapter unifiedloader
         ipadapterunifiedloader = NODE_CLASS_MAPPINGS["IPAdapterUnifiedLoader"]()
+
+        ## load iamge batch (for combinding reference images)
         imagebatch = NODE_CLASS_MAPPINGS["ImageBatch"]()
+
+        ## load ipadapter (image processing of reference image)
         ipadapter = NODE_CLASS_MAPPINGS["IPAdapter"]()
+
+        ## style of controlnet (depth map)
         depthanythingpreprocessor = NODE_CLASS_MAPPINGS["DepthAnythingPreprocessor"]()
+
+        ## load controlnetapplyadvanced
         controlnetapplyadvanced = NODE_CLASS_MAPPINGS["ControlNetApplyAdvanced"]()
+
+        ## load ksampleradvanced 
         ksampleradvanced = NODE_CLASS_MAPPINGS["KSamplerAdvanced"]()
+
+        ## load vaedecode
         vaedecode = NODE_CLASS_MAPPINGS["VAEDecode"]()
+
+        ## load saveimage (unnecessary if I save them separately)
         saveimage = NODE_CLASS_MAPPINGS["SaveImage"]()
+
+        ## load second style of controlnet (unnecessary)
         cannyedgepreprocessor = NODE_CLASS_MAPPINGS["CannyEdgePreprocessor"]()
 
         for q in range(1):
+            ## ipadapter unified loader
             ipadapterunifiedloader_63 = ipadapterunifiedloader.load_models(
                 preset="VIT-G (medium strength)",
                 model=get_value_at_index(loraloader_68, 0),
             )
 
+            ## image batch (combine the input images)
             imagebatch_65 = imagebatch.batch(
                 image1=get_value_at_index(loadimage_64, 0),
                 image2=get_value_at_index(loadimage_60, 0),
             )
-
+            ## ""
             imagebatch_70 = imagebatch.batch(
                 image1=get_value_at_index(imagebatch_65, 0),
                 image2=get_value_at_index(loadimage_71, 0),
             )
-
+            ## ""
             imagebatch_73 = imagebatch.batch(
                 image1=get_value_at_index(imagebatch_70, 0),
                 image2=get_value_at_index(loadimage_72, 0),
             )
-
+            ## ""
             imagebatch_75 = imagebatch.batch(
                 image1=get_value_at_index(imagebatch_73, 0),
                 image2=get_value_at_index(loadimage_74, 0),
             )
-
+            ## ""
             imagebatch_76 = imagebatch.batch(
                 image1=get_value_at_index(imagebatch_75, 0),
                 image2=get_value_at_index(loadimage_77, 0),
             )
 
+            ## load the combined images in the ipadapter
             ipadapter_58 = ipadapter.apply_ipadapter(
                 weight=1,
                 start_at=0,
@@ -253,12 +295,15 @@ def main():
                 image=get_value_at_index(imagebatch_76, 0),
             )
 
+            ## creating depth image for controlnet
             depthanythingpreprocessor_55 = depthanythingpreprocessor.execute(
                 ckpt_name="depth_anything_vitb14.pth",
                 resolution=512,
                 image=get_value_at_index(loadimage_50, 0),
             )
 
+
+            ## applies the controlnet 
             controlnetapplyadvanced_54 = controlnetapplyadvanced.apply_controlnet(
                 strength=0.7000000000000002,
                 start_percent=0,
@@ -269,6 +314,7 @@ def main():
                 image=get_value_at_index(depthanythingpreprocessor_55, 0),
             )
 
+            ## first ksampler advanced with noise
             ksampleradvanced_10 = ksampleradvanced.sample(
                 add_noise="enable",
                 noise_seed=random.randint(1, 2**64),
@@ -285,6 +331,7 @@ def main():
                 latent_image=get_value_at_index(emptylatentimage_5, 0),
             )
 
+            ## second ksampler advanced without noise
             ksampleradvanced_11 = ksampleradvanced.sample(
                 add_noise="disable",
                 noise_seed=random.randint(1, 2**64),
@@ -301,15 +348,18 @@ def main():
                 latent_image=get_value_at_index(ksampleradvanced_10, 0),
             )
 
+            ## vae decode image (output image)
             vaedecode_17 = vaedecode.decode(
                 samples=get_value_at_index(ksampleradvanced_11, 0),
                 vae=get_value_at_index(checkpointloadersimple_12, 2),
             )
 
+            ## save output image
             saveimage_19 = saveimage.save_images(
                 filename_prefix="ComfyUI", images=get_value_at_index(vaedecode_17, 0)
             )
 
+            ## different style of controlnet (unnecessary)
             cannyedgepreprocessor_56 = cannyedgepreprocessor.execute(
                 low_threshold=100,
                 high_threshold=200,
