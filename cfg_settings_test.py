@@ -127,21 +127,30 @@ cfg_2_increment = int(input("Enter the increment value for cfg_2 (refiner): "))
 
 ## assigns the range of steps_total and first_steps values by user input
 steps_total = int(input("Enter the total number of steps (if none is given default is 50): "))
-if steps_total == 0:
+if not steps_total:  
     steps_total = 50
+else:
+    steps_total = int(steps_total)
+
 first_steps = int(input("Enter the number of steps for the first ksampler (if none is given default is 30): "))
-if first_steps == 0:
+if not first_steps:  
     first_steps = 30
+else:
+    first_steps = int(first_steps)
 
 ## assign LoRa strength by user input if none is given default is 0.70
 lora_strength = float(input("Enter the strength of LoRa (if none is given default is 0.70): "))
-if lora_strength == 0:
+if not lora_strength:  
     lora_strength = 0.70
+else:
+    lora_strength = float(lora_strength)
 
 ## assign the strength of the controlnet by user input if none is given default is 0.70
 controlnet_strength = float(input("Enter the strength of controlnet (if none is given default is 0.70): "))
-if controlnet_strength == 0:
+if not controlnet_strength:  
     controlnet_strength = 0.70
+else:
+    controlnet_strength = float(controlnet_strength)
 
 ## calculate amount of folders to be created
 total_folders = ((cfg_1_end - cfg_1_start) // cfg_1_increment) * ((cfg_2_end - cfg_2_start) // cfg_2_increment)
@@ -372,8 +381,11 @@ def main():
         image = ["image1.png", "image2.png", "image3.png", "image4.png"]
         # Create the main output directory
         output_dir = "output_images"
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        index = 1
+        while os.path.exists(output_dir):
+            output_dir = f"output_images_{index}"
+            index += 1
+        os.makedirs(output_dir)
         index = 0
 
 
@@ -455,10 +467,8 @@ def main():
                     )
 
                     # Save the images in the respective subdirectory
-                    saveimage.save_images(
-                        filename_prefix=os.path.join(sub_dir, f"ComfyUI_{index}"),
-                        images=get_value_at_index(vaedecode_17, 0),
-                    )
+                    output_image = get_value_at_index(vaedecode_17, 0)
+                    output_image.save(os.path.join(sub_dir, f"ComfyUI_{index}.png"))
                     index += 1
 
 
