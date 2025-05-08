@@ -143,6 +143,28 @@ controlnet_strength = float(input("Enter the strength of controlnet (if none is 
 if controlnet_strength == 0:
     controlnet_strength = 0.70
 
+## calculate amount of folders to be created
+total_folders = ((cfg_1_end - cfg_1_start) // cfg_1_increment) * ((cfg_2_end - cfg_2_start) // cfg_2_increment)
+print(f"Total folders to be created: {total_folders}")
+
+## calculate amount of images to be generated
+total_images = ((cfg_1_end - cfg_1_start) // cfg_1_increment) * ((cfg_2_end - cfg_2_start) // cfg_2_increment) * 4
+print(f"Total images to be generated: {total_images}")
+
+## calculate estemated size of the folder output_images
+total_size = total_images ## assuming each image is 1 MB
+print(f"Estimated size of the output folder: {total_size} MB")
+
+## calculate estimated time to generate the images
+total_time = total_images * steps_total * 0.265 ## given that 50 steps took 13.25 seconds per image 
+print(f"Estimated time to generate the images: {total_time} seconds")
+
+## ask the user if they want to continue
+continue_choice = input("Do you want to continue? (yes/no): ").strip().lower()
+if continue_choice != "yes":
+    print("Exiting the program.")
+    exit()
+
 
 
 def main():
