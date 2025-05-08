@@ -154,7 +154,7 @@ total_size = total_images ## assuming each image is 1 MB
 print(f"Estimated size of the output folder: {total_size} MB")
 
 ## calculate estimated time to generate the images
-total_time = total_images * total_steps * 0.27 ## given that 50 steps took 13.25 seconds per image 
+total_time = total_images * total_steps * 0.27 + 15 ## given that 50 steps took about 13.25 seconds per image and 15 seconds for the initialization 
 print(f"Estimated time to generate the images: {total_time} seconds")
 print(f"Estimated time to generate the images: {total_time/60} minutes")
 print(f"Estimated time to generate the images: {total_time/3600} hours")
@@ -182,6 +182,26 @@ while os.path.exists(output_dir):
     output_dir = f"{base_output_dir}_{index}"
     index += 1
 os.makedirs(output_dir)
+print(f"Output directory created: {output_dir}")
+
+## create a .txt file with the settings
+settings_file_path = os.path.join(output_dir, "settings.txt")
+with open(settings_file_path, "w") as settings_file:
+    settings_file.write(f"cfg_1_start: {cfg_1_start}\n")
+    settings_file.write(f"cfg_1_end: {cfg_1_end}\n")
+    settings_file.write(f"cfg_1_increment: {cfg_1_increment}\n")
+    settings_file.write(f"cfg_2_start: {cfg_2_start}\n")
+    settings_file.write(f"cfg_2_end: {cfg_2_end}\n")
+    settings_file.write(f"cfg_2_increment: {cfg_2_increment}\n")
+    settings_file.write(f"total_steps: {total_steps}\n")
+    settings_file.write(f"first_steps: {first_steps}\n")
+    settings_file.write(f"lora_strength: {lora_strength}\n")
+    settings_file.write(f"controlnet_strength: {controlnet_strength}\n")
+    settings_file.write(f"total_folders: {total_folders}\n")
+    settings_file.write(f"total_images: {total_images}\n")
+    settings_file.write(f"total_estemated_time: {total_time} seconds\n") 
+    settings_file.write(f"output_dir: {output_dir}\n")
+print(f"Settings saved to: {settings_file_path}")
 
 
 
