@@ -22,9 +22,11 @@ while True:
 while True:
     try:
         cfg_1_end = float(input("Enter the end value for cfg_1 (cfg_1 < end value, 0-100): "))
-        if 0 <= cfg_1_end <= 100:
+        if 0 <= cfg_1_end <= 100 and cfg_1_end > cfg_1_start:
             print(f"cfg_1_end set to: {cfg_1_end}")
             break
+        elif cfg_1_end <= cfg_1_start:
+            print("End value must be greater than the start value. Please try again.")
         else:
             print("Value must be between 0 and 100. Please try again.")
     except ValueError:
@@ -55,9 +57,11 @@ while True:
 while True:
     try:
         cfg_2_end = float(input("Enter the end value for cfg_2 (cfg_2 < end value, refiner, 0-100): "))
-        if 0 <= cfg_2_end <= 100:
+        if 0 <= cfg_2_end <= 100 and cfg_2_end > cfg_2_start:
             print(f"cfg_2_end set to: {cfg_2_end}")
             break
+        elif cfg_2_end <= cfg_2_start:
+            print("End value must be greater than the start value. Please try again.")
         else:
             print("Value must be between 0 and 100. Please try again.")
     except ValueError:
