@@ -163,8 +163,8 @@ print("")
 
 ## ask the user for the output directory name
 output_dir_input = input("Enter the output directory name (default: output_images): ").strip()
-base_output_dir = output_dir_input if output_dir_input else "output_images"
-print(f"Output directory base name set to: {base_output_dir}")
+output_dir = output_dir_input if output_dir_input else "output_images"
+print(f"Output directory base name set to: {output_dir}")
 print("If the directory already exists, an index will be appended to create a unique folder name.")
 
 print("")
@@ -492,7 +492,7 @@ def main():
         ## Create the main output directory
         index = 1
         while os.path.exists(output_dir):
-            output_dir = f"{base_output_dir}_{index}"
+            output_dir = f"{output_dir}_{index}"
             index += 1
         os.makedirs(output_dir)
         index = 0
