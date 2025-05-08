@@ -3,68 +3,146 @@ import random
 import sys
 from typing import Sequence, Mapping, Any, Union
 import torch
+import math
 
 
 
 ## assigns the range of cfg_1 and cfg_2 values by user input 
-cfg_1_start = float(input("Enter the start value for cfg_1: "))
-print(f"cfg_1_start set to: {cfg_1_start}")
+while True:
+    try:
+        cfg_1_start = float(input("Enter the start value for cfg_1 (0-100): "))
+        if 0 <= cfg_1_start <= 100:
+            print(f"cfg_1_start set to: {cfg_1_start}")
+            break
+        else:
+            print("Value must be between 0 and 100. Please try again.")
+    except ValueError:
+        print("Invalid input. Please enter a number between 0 and 100.")
 
-cfg_1_end = float(input("Enter the end value for cfg_1 (cfg_1 < end value): "))
-print(f"cfg_1_end set to: {cfg_1_end}")
+while True:
+    try:
+        cfg_1_end = float(input("Enter the end value for cfg_1 (cfg_1 < end value, 0-100): "))
+        if 0 <= cfg_1_end <= 100:
+            print(f"cfg_1_end set to: {cfg_1_end}")
+            break
+        else:
+            print("Value must be between 0 and 100. Please try again.")
+    except ValueError:
+        print("Invalid input. Please enter a number between 0 and 100.")
 
-cfg_1_increment = float(input("Enter the increment value for cfg_1: "))
-print(f"cfg_1_increment set to: {cfg_1_increment}")
+while True:
+    try:
+        cfg_1_increment = float(input("Enter the increment value for cfg_1: "))
+        if cfg_1_increment > 0:
+            print(f"cfg_1_increment set to: {cfg_1_increment}")
+            break
+        else:
+            print("Increment must be a positive number. Please try again.")
+    except ValueError:
+        print("Invalid input. Please enter a valid number for increment.")
 
-cfg_2_start = float(input("Enter the start value for cfg_2 (refiner): "))
-print(f"cfg_2_start set to: {cfg_2_start}")
+while True:
+    try:
+        cfg_2_start = float(input("Enter the start value for cfg_2 (refiner, 0-100): "))
+        if 0 <= cfg_2_start <= 100:
+            print(f"cfg_2_start set to: {cfg_2_start}")
+            break
+        else:
+            print("Value must be between 0 and 100. Please try again.")
+    except ValueError:
+        print("Invalid input. Please enter a number between 0 and 100.")
 
-cfg_2_end = float(input("Enter the end value for cfg_2 (cfg_2 < end value, refiner): "))
-print(f"cfg_2_end set to: {cfg_2_end}")
+while True:
+    try:
+        cfg_2_end = float(input("Enter the end value for cfg_2 (cfg_2 < end value, refiner, 0-100): "))
+        if 0 <= cfg_2_end <= 100:
+            print(f"cfg_2_end set to: {cfg_2_end}")
+            break
+        else:
+            print("Value must be between 0 and 100. Please try again.")
+    except ValueError:
+        print("Invalid input. Please enter a number between 0 and 100.")
 
-cfg_2_increment = float(input("Enter the increment value for cfg_2 (refiner): "))
-print(f"cfg_2_increment set to: {cfg_2_increment}")
+while True:
+    try:
+        cfg_2_increment = float(input("Enter the increment value for cfg_2 (refiner): "))
+        if cfg_2_increment > 0:
+            print(f"cfg_2_increment set to: {cfg_2_increment}")
+            break
+        else:
+            print("Increment must be a positive number. Please try again.")
+    except ValueError:
+        print("Invalid input. Please enter a valid number for increment.")
 
 
 # Assigns the range of total_steps and first_steps values by user input
-total_steps_input = input("Enter the total number of steps (if none is given default is 50): ")
-if total_steps_input.strip() == "":
-    total_steps = 50
-else:
-    total_steps = int(total_steps_input)
+while True:
+    total_steps_input = input("Enter the total number of steps (if none is given default is 50): ")
+    if total_steps_input.strip() == "":
+        total_steps = 50
+        break
+    try:
+        total_steps = int(total_steps_input)
+        break
+    except ValueError:
+        print("Invalid input. Please enter an integer value for total steps.")
 print(f"total_steps set to: {total_steps}")
 
-first_steps_input = input("Enter the number of steps for the first ksampler (if none is given default is 30): ")
-if first_steps_input.strip() == "":
-    first_steps = 30
-else:
-    first_steps = int(first_steps_input)
+while True:
+    first_steps_input = input("Enter the number of steps for the first ksampler (if none is given default is 30): ")
+    if first_steps_input.strip() == "":
+        first_steps = 30
+        break
+    try:
+        first_steps = int(first_steps_input)
+        if 0 <= first_steps <= total_steps:
+            break
+        else:
+            print(f"Value must be an integer between 0 and {total_steps}. Please try again.")
+    except ValueError:
+        print("Invalid input. Please enter an integer value.")
 print(f"first_steps set to: {first_steps}")
 
-# assign LoRa strength by user input if none is given default is 0.70
-lora_strength_input = input("Enter the strength of LoRa (if none is given default is 0.70): ")
-if lora_strength_input.strip() == "":
-    lora_strength = 0.70
-else:
-    lora_strength = float(lora_strength_input)
+# assign LoRa strength by user input; must be a float between 0 and 10, default is 0.70
+while True:
+    lora_strength_input = input("Enter the strength of LoRa (float 0-100, default 0.70): ")
+    if lora_strength_input.strip() == "":
+        lora_strength = 0.70
+        break
+    try:
+        lora_strength = float(lora_strength_input)
+        if 0 <= lora_strength <= 100:
+            break
+        else:
+            print("Value must be between 0 and 100. Please try again.")
+    except ValueError:
+        print("Invalid input. Please enter a float between 0 and 100.")
 print(f"lora_strength set to: {lora_strength}")
 
-# assign the strength of the controlnet by user input if none is given default is 0.70
-controlnet_strength_input = input("Enter the strength of controlnet (if none is given default is 0.70): ")
-if controlnet_strength_input.strip() == "":
-    controlnet_strength = 0.70
-else:
-    controlnet_strength = float(controlnet_strength_input)
+# assign the strength of the controlnet by user input; must be a float between 0 and 10, default is 0.70
+while True:
+    controlnet_strength_input = input("Enter the strength of controlnet (float 0-10, default 0.70): ")
+    if controlnet_strength_input.strip() == "":
+        controlnet_strength = 0.70
+        break
+    try:
+        controlnet_strength = float(controlnet_strength_input)
+        if 0 <= controlnet_strength <= 10:
+            break
+        else:
+            print("Value must be between 0 and 10. Please try again.")
+    except ValueError:
+        print("Invalid input. Please enter a float between 0 and 10.")
 print(f"controlnet_strength set to: {controlnet_strength}")
 
 print("")
 
 ## calculate amount of folders to be created
-total_folders = ((cfg_1_end - cfg_1_start) // cfg_1_increment) * ((cfg_2_end - cfg_2_start) // cfg_2_increment)
+total_folders = math.ceil(((cfg_1_end - cfg_1_start) / cfg_1_increment)) * math.ceil(((cfg_2_end - cfg_2_start) / cfg_2_increment))
 print(f"Total folders to be created: {total_folders}")
 
 ## calculate amount of images to be generated
-total_images = ((cfg_1_end - cfg_1_start) // cfg_1_increment) * ((cfg_2_end - cfg_2_start) // cfg_2_increment) * 4
+total_images = total_folders * 4
 print(f"Total images to be generated: {total_images}")
 
 ## calculate estemated size of the folder output_images
@@ -72,10 +150,18 @@ total_size = total_images ## assuming each image is 1 MB
 print(f"Estimated size of the output folder: {total_size} MB")
 
 ## calculate estimated time to generate the images
-total_time = total_images * total_steps * 0.265 ## given that 50 steps took 13.25 seconds per image 
+total_time = total_images * total_steps * 0.27 ## given that 50 steps took 13.25 seconds per image 
 print(f"Estimated time to generate the images: {total_time} seconds")
 print(f"Estimated time to generate the images: {total_time/60} minutes")
 print(f"Estimated time to generate the images: {total_time/3600} hours")
+
+print("")
+
+## ask the user for the output directory name
+output_dir_input = input("Enter the output directory name (default: output_images): ").strip()
+base_output_dir = output_dir_input if output_dir_input else "output_images"
+print(f"Output directory base name set to: {base_output_dir}")
+print("If the directory already exists, an index will be appended to create a unique folder name.")
 
 print("")
 
@@ -399,11 +485,10 @@ def main():
 
 
         image = ["image1.png", "image2.png", "image3.png", "image4.png"]
-        # Create the main output directory
-        output_dir = "output_images"
+        ## Create the main output directory
         index = 1
         while os.path.exists(output_dir):
-            output_dir = f"output_images_{index}"
+            output_dir = f"{base_output_dir}_{index}"
             index += 1
         os.makedirs(output_dir)
         index = 0
@@ -416,7 +501,7 @@ def main():
 
         for cfg_1 in float_range(cfg_1_start, cfg_1_end, cfg_1_increment):
             for cfg_2 in float_range(cfg_2_start, cfg_2_end, cfg_2_increment):
-                # Create a subdirectory for each combination of cfg_1 and cfg_2
+                ## Create a subdirectory for each combination of cfg_1 and cfg_2
                 sub_dir = os.path.join(output_dir, f"cfg_{cfg_1}_{cfg_2}")
                 if not os.path.exists(sub_dir):
                     os.makedirs(sub_dir)
