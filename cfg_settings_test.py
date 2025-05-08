@@ -5,6 +5,88 @@ from typing import Sequence, Mapping, Any, Union
 import torch
 
 
+
+## assigns the range of cfg_1 and cfg_2 values by user input 
+cfg_1_start = float(input("Enter the start value for cfg_1: "))
+print(f"cfg_1_start set to: {cfg_1_start}")
+
+cfg_1_end = float(input("Enter the end value for cfg_1 (cfg_1 < end value): "))
+print(f"cfg_1_end set to: {cfg_1_end}")
+
+cfg_1_increment = float(input("Enter the increment value for cfg_1: "))
+print(f"cfg_1_increment set to: {cfg_1_increment}")
+
+cfg_2_start = float(input("Enter the start value for cfg_2 (refiner): "))
+print(f"cfg_2_start set to: {cfg_2_start}")
+
+cfg_2_end = float(input("Enter the end value for cfg_2 (cfg_2 < end value, refiner): "))
+print(f"cfg_2_end set to: {cfg_2_end}")
+
+cfg_2_increment = float(input("Enter the increment value for cfg_2 (refiner): "))
+print(f"cfg_2_increment set to: {cfg_2_increment}")
+
+
+# Assigns the range of total_steps and first_steps values by user input
+total_steps_input = input("Enter the total number of steps (if none is given default is 50): ")
+if total_steps_input.strip() == "":
+    total_steps = 50
+else:
+    total_steps = int(total_steps_input)
+print(f"total_steps set to: {total_steps}")
+
+first_steps_input = input("Enter the number of steps for the first ksampler (if none is given default is 30): ")
+if first_steps_input.strip() == "":
+    first_steps = 30
+else:
+    first_steps = int(first_steps_input)
+print(f"first_steps set to: {first_steps}")
+
+# assign LoRa strength by user input if none is given default is 0.70
+lora_strength_input = input("Enter the strength of LoRa (if none is given default is 0.70): ")
+if lora_strength_input.strip() == "":
+    lora_strength = 0.70
+else:
+    lora_strength = float(lora_strength_input)
+print(f"lora_strength set to: {lora_strength}")
+
+# assign the strength of the controlnet by user input if none is given default is 0.70
+controlnet_strength_input = input("Enter the strength of controlnet (if none is given default is 0.70): ")
+if controlnet_strength_input.strip() == "":
+    controlnet_strength = 0.70
+else:
+    controlnet_strength = float(controlnet_strength_input)
+print(f"controlnet_strength set to: {controlnet_strength}")
+
+print("")
+
+## calculate amount of folders to be created
+total_folders = ((cfg_1_end - cfg_1_start) // cfg_1_increment) * ((cfg_2_end - cfg_2_start) // cfg_2_increment)
+print(f"Total folders to be created: {total_folders}")
+
+## calculate amount of images to be generated
+total_images = ((cfg_1_end - cfg_1_start) // cfg_1_increment) * ((cfg_2_end - cfg_2_start) // cfg_2_increment) * 4
+print(f"Total images to be generated: {total_images}")
+
+## calculate estemated size of the folder output_images
+total_size = total_images ## assuming each image is 1 MB
+print(f"Estimated size of the output folder: {total_size} MB")
+
+## calculate estimated time to generate the images
+total_time = total_images * total_steps * 0.265 ## given that 50 steps took 13.25 seconds per image 
+print(f"Estimated time to generate the images: {total_time} seconds")
+print(f"Estimated time to generate the images: {total_time/60} minutes")
+print(f"Estimated time to generate the images: {total_time/3600} hours")
+
+print("")
+
+## ask the user if they want to continue
+continue_choice = input("Do you want to continue? (yes/no): ").strip().lower()
+if continue_choice != "yes":
+    print("Exiting the program.")
+    exit()
+
+
+
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
     """Returns the value at the given index of a sequence or mapping.
 
@@ -84,10 +166,8 @@ def add_extra_model_paths() -> None:
     else:
         print("Could not find the extra_model_paths config file.")
 
-
 add_comfyui_directory_to_sys_path()
 add_extra_model_paths()
-
 
 def import_custom_nodes() -> None:
     """Find all custom nodes in the custom_nodes folder and add those node objects to NODE_CLASS_MAPPINGS
@@ -113,66 +193,6 @@ def import_custom_nodes() -> None:
 
 
 from nodes import NODE_CLASS_MAPPINGS
-
-
-
-## assigns the range of cfg_1 and cfg_2 values by user input 
-cfg_1_start = int(input("Enter the start value for cfg_1: "))
-cfg_1_end = int(input("Enter the end value for cfg_1: cfg_1 < end value"))
-cfg_1_increment = int(input("Enter the increment value for cfg_1: "))
-cfg_2_start = int(input("Enter the start value for cfg_2 (refiner): "))
-cfg_2_end = int(input("Enter the end value for cfg_2: cfg_2 < end value (refiner): "))
-cfg_2_increment = int(input("Enter the increment value for cfg_2 (refiner): "))
-
-
-## assigns the range of steps_total and first_steps values by user input
-steps_total = int(input("Enter the total number of steps (if none is given default is 50): "))
-if not steps_total:  
-    steps_total = 50
-else:
-    steps_total = int(steps_total)
-
-first_steps = int(input("Enter the number of steps for the first ksampler (if none is given default is 30): "))
-if not first_steps:  
-    first_steps = 30
-else:
-    first_steps = int(first_steps)
-
-## assign LoRa strength by user input if none is given default is 0.70
-lora_strength = float(input("Enter the strength of LoRa (if none is given default is 0.70): "))
-if not lora_strength:  
-    lora_strength = 0.70
-else:
-    lora_strength = float(lora_strength)
-
-## assign the strength of the controlnet by user input if none is given default is 0.70
-controlnet_strength = float(input("Enter the strength of controlnet (if none is given default is 0.70): "))
-if not controlnet_strength:  
-    controlnet_strength = 0.70
-else:
-    controlnet_strength = float(controlnet_strength)
-
-## calculate amount of folders to be created
-total_folders = ((cfg_1_end - cfg_1_start) // cfg_1_increment) * ((cfg_2_end - cfg_2_start) // cfg_2_increment)
-print(f"Total folders to be created: {total_folders}")
-
-## calculate amount of images to be generated
-total_images = ((cfg_1_end - cfg_1_start) // cfg_1_increment) * ((cfg_2_end - cfg_2_start) // cfg_2_increment) * 4
-print(f"Total images to be generated: {total_images}")
-
-## calculate estemated size of the folder output_images
-total_size = total_images ## assuming each image is 1 MB
-print(f"Estimated size of the output folder: {total_size} MB")
-
-## calculate estimated time to generate the images
-total_time = total_images * steps_total * 0.265 ## given that 50 steps took 13.25 seconds per image 
-print(f"Estimated time to generate the images: {total_time} seconds")
-
-## ask the user if they want to continue
-continue_choice = input("Do you want to continue? (yes/no): ").strip().lower()
-if continue_choice != "yes":
-    print("Exiting the program.")
-    exit()
 
 
 
@@ -389,8 +409,13 @@ def main():
         index = 0
 
 
-        for cfg_1 in range(cfg_1_start, cfg_1_end, cfg_1_increment):
-            for cfg_2 in range(cfg_2_start, cfg_2_end, cfg_2_increment):
+        def float_range(start, end, step):
+            while start < end:
+                yield round(start, 10)
+                start += step
+
+        for cfg_1 in float_range(cfg_1_start, cfg_1_end, cfg_1_increment):
+            for cfg_2 in float_range(cfg_2_start, cfg_2_end, cfg_2_increment):
                 # Create a subdirectory for each combination of cfg_1 and cfg_2
                 sub_dir = os.path.join(output_dir, f"cfg_{cfg_1}_{cfg_2}")
                 if not os.path.exists(sub_dir):
@@ -430,7 +455,7 @@ def main():
                     ksampleradvanced_10 = ksampleradvanced.sample(
                         add_noise="enable",
                         noise_seed=random.randint(1, 2**64),
-                        steps=steps_total,
+                        steps=total_steps,
                         cfg=cfg_1,
                         sampler_name="euler",
                         scheduler="sgm_uniform",
@@ -447,7 +472,7 @@ def main():
                     ksampleradvanced_11 = ksampleradvanced.sample(
                         add_noise="disable",
                         noise_seed=random.randint(1, 2**64),
-                        steps=steps_total,
+                        steps=total_steps,
                         cfg=cfg_2,
                         sampler_name="euler",
                         scheduler="normal",
@@ -467,8 +492,10 @@ def main():
                     )
 
                     # Save the images in the respective subdirectory
-                    output_image = get_value_at_index(vaedecode_17, 0)
-                    output_image.save(os.path.join(sub_dir, f"ComfyUI_{index}.png"))
+                    saveimage.save_images(
+                        filename_prefix=os.path.join(sub_dir, f"ComfyUI_{index}"),
+                        images=get_value_at_index(vaedecode_17, 0),
+                    )
                     index += 1
 
 
