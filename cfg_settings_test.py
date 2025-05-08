@@ -115,6 +115,36 @@ def import_custom_nodes() -> None:
 from nodes import NODE_CLASS_MAPPINGS
 
 
+
+## assigns the range of cfg_1 and cfg_2 values by user input 
+cfg_1_start = int(input("Enter the start value for cfg_1: "))
+cfg_1_end = int(input("Enter the end value for cfg_1: cfg_1 < end value"))
+cfg_1_increment = int(input("Enter the increment value for cfg_1: "))
+cfg_2_start = int(input("Enter the start value for cfg_2 (refiner): "))
+cfg_2_end = int(input("Enter the end value for cfg_2: cfg_2 < end value (refiner): "))
+cfg_2_increment = int(input("Enter the increment value for cfg_2 (refiner): "))
+
+
+## assigns the range of steps_total and first_steps values by user input
+steps_total = int(input("Enter the total number of steps (if none is given default is 50): "))
+if steps_total == 0:
+    steps_total = 50
+first_steps = int(input("Enter the number of steps for the first ksampler (if none is given default is 30): "))
+if first_steps == 0:
+    first_steps = 30
+
+## assign LoRa strength by user input if none is given default is 0.70
+lora_strength = float(input("Enter the strength of LoRa (if none is given default is 0.70): "))
+if lora_strength == 0:
+    lora_strength = 0.70
+
+## assign the strength of the controlnet by user input if none is given default is 0.70
+controlnet_strength = float(input("Enter the strength of controlnet (if none is given default is 0.70): "))
+if controlnet_strength == 0:
+    controlnet_strength = 0.70
+
+
+
 def main():
     import_custom_nodes()
     with torch.inference_mode():
@@ -192,7 +222,7 @@ def main():
         ## load LoRA with strength of model and clip 
         loraloader_68 = loraloader.load_lora(
             lora_name="xraylorasdxl.safetensors",
-            strength_model=1.0000000000000002,
+            strength_model=lora_strength,
             strength_clip=1,
             model=get_value_at_index(checkpointloadersimple_4, 0),
             clip=get_value_at_index(checkpointloadersimple_4, 1),
@@ -302,22 +332,6 @@ def main():
             image1=get_value_at_index(imagebatch_75, 0),
             image2=get_value_at_index(loadimage_77, 0),
         )
-        ############
-
-
-
-
-
-        ## input image
-        loadimage_50 = loadimage.load_image(
-            image="f693e789-a5a9-4430-b33e-fe2597e9cb9e.jpg"
-        )
-
-        ## load unconnected vae loader (unnecessary)
-        vaeencode_51 = vaeencode.encode(
-            pixels=get_value_at_index(loadimage_50, 0),
-            vae=get_value_at_index(checkpointloadersimple_4, 2),
-        )
 
         ## load the combined images in the ipadapter
         ipadapter_58 = ipadapter.apply_ipadapter(
@@ -329,77 +343,101 @@ def main():
             ipadapter=get_value_at_index(ipadapterunifiedloader_63, 1),
             image=get_value_at_index(imagebatch_76, 0),
         )
+        ############
 
-        ## creating depth image for controlnet
-        depthanythingpreprocessor_55 = depthanythingpreprocessor.execute(
-            ckpt_name="depth_anything_vitb14.pth",
-            resolution=512,
-            image=get_value_at_index(loadimage_50, 0),
-        )
 
-        ## applies the controlnet 
-        controlnetapplyadvanced_54 = controlnetapplyadvanced.apply_controlnet(
-            strength=0.7000000000000002,
-            start_percent=0,
-            end_percent=1,
-            positive=get_value_at_index(cliptextencode_6, 0),
-            negative=get_value_at_index(cliptextencode_7, 0),
-            control_net=get_value_at_index(controlnetloader_52, 0),
-            image=get_value_at_index(depthanythingpreprocessor_55, 0),
-        )
 
-        ## first ksampler advanced with noise
-        ksampleradvanced_10 = ksampleradvanced.sample(
-            add_noise="enable",
-            noise_seed=random.randint(1, 2**64),
-            steps=50,
-            cfg=9,
-            sampler_name="euler",
-            scheduler="sgm_uniform",
-            start_at_step=0,
-            end_at_step=30,
-            return_with_leftover_noise="enable",
-            model=get_value_at_index(ipadapter_58, 0),
-            positive=get_value_at_index(controlnetapplyadvanced_54, 0),
-            negative=get_value_at_index(controlnetapplyadvanced_54, 1),
-            latent_image=get_value_at_index(emptylatentimage_5, 0),
-        )
+        image = ["image1.png", "image2.png", "image3.png", "image4.png"]
+        # Create the main output directory
+        output_dir = "output_images"
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        index = 0
 
-        ## second ksampler advanced without noise
-        ksampleradvanced_11 = ksampleradvanced.sample(
-            add_noise="disable",
-            noise_seed=random.randint(1, 2**64),
-            steps=50,
-            cfg=8,
-            sampler_name="euler",
-            scheduler="normal",
-            start_at_step=30,
-            end_at_step=10000,
-            return_with_leftover_noise="disable",
-            model=get_value_at_index(checkpointloadersimple_12, 0),
-            positive=get_value_at_index(cliptextencode_15, 0),
-            negative=get_value_at_index(cliptextencode_16, 0),
-            latent_image=get_value_at_index(ksampleradvanced_10, 0),
-        )
 
-        ## vae decode image (output image)
-        vaedecode_17 = vaedecode.decode(
-            samples=get_value_at_index(ksampleradvanced_11, 0),
-            vae=get_value_at_index(checkpointloadersimple_12, 2),
-        )
+        for cfg_1 in range(cfg_1_start, cfg_1_end, cfg_1_increment):
+            for cfg_2 in range(cfg_2_start, cfg_2_end, cfg_2_increment):
+                # Create a subdirectory for each combination of cfg_1 and cfg_2
+                sub_dir = os.path.join(output_dir, f"cfg_{cfg_1}_{cfg_2}")
+                if not os.path.exists(sub_dir):
+                    os.makedirs(sub_dir)
 
-        ## save output image
-        saveimage_19 = saveimage.save_images(
-            filename_prefix="ComfyUI", images=get_value_at_index(vaedecode_17, 0)
-        )
+                for i in range(4):
+                    ## input image
+                    loadimage_50 = loadimage.load_image(
+                        image=image[i]
+                    )
 
-        ## different style of controlnet (unnecessary)
-        cannyedgepreprocessor_56 = cannyedgepreprocessor.execute(
-            low_threshold=100,
-            high_threshold=200,
-            resolution=512,
-            image=get_value_at_index(loadimage_50, 0),
-        )
+                    ## load unconnected vae loader (unnecessary)
+                    vaeencode_51 = vaeencode.encode(
+                        pixels=get_value_at_index(loadimage_50, 0),
+                        vae=get_value_at_index(checkpointloadersimple_4, 2),
+                    )
+
+                    ## creating depth image for controlnet
+                    depthanythingpreprocessor_55 = depthanythingpreprocessor.execute(
+                        ckpt_name="depth_anything_vitb14.pth",
+                        resolution=512,
+                        image=get_value_at_index(loadimage_50, 0),
+                    )
+
+                    ## applies the controlnet 
+                    controlnetapplyadvanced_54 = controlnetapplyadvanced.apply_controlnet(
+                        strength=controlnet_strength,
+                        start_percent=0,
+                        end_percent=1,
+                        positive=get_value_at_index(cliptextencode_6, 0),
+                        negative=get_value_at_index(cliptextencode_7, 0),
+                        control_net=get_value_at_index(controlnetloader_52, 0),
+                        image=get_value_at_index(depthanythingpreprocessor_55, 0),
+                    )
+
+                    ## first ksampler advanced with noise
+                    ksampleradvanced_10 = ksampleradvanced.sample(
+                        add_noise="enable",
+                        noise_seed=random.randint(1, 2**64),
+                        steps=steps_total,
+                        cfg=cfg_1,
+                        sampler_name="euler",
+                        scheduler="sgm_uniform",
+                        start_at_step=0,
+                        end_at_step=first_steps,
+                        return_with_leftover_noise="enable",
+                        model=get_value_at_index(ipadapter_58, 0),
+                        positive=get_value_at_index(controlnetapplyadvanced_54, 0),
+                        negative=get_value_at_index(controlnetapplyadvanced_54, 1),
+                        latent_image=get_value_at_index(emptylatentimage_5, 0),
+                    )
+
+                    ## second ksampler advanced without noise
+                    ksampleradvanced_11 = ksampleradvanced.sample(
+                        add_noise="disable",
+                        noise_seed=random.randint(1, 2**64),
+                        steps=steps_total,
+                        cfg=cfg_2,
+                        sampler_name="euler",
+                        scheduler="normal",
+                        start_at_step=first_steps,
+                        end_at_step=10000,
+                        return_with_leftover_noise="disable",
+                        model=get_value_at_index(checkpointloadersimple_12, 0),
+                        positive=get_value_at_index(cliptextencode_15, 0),
+                        negative=get_value_at_index(cliptextencode_16, 0),
+                        latent_image=get_value_at_index(ksampleradvanced_10, 0),
+                    )
+
+                    ## vae decode image (output image)
+                    vaedecode_17 = vaedecode.decode(
+                        samples=get_value_at_index(ksampleradvanced_11, 0),
+                        vae=get_value_at_index(checkpointloadersimple_12, 2),
+                    )
+
+                    # Save the images in the respective subdirectory
+                    saveimage.save_images(
+                        filename_prefix=os.path.join(sub_dir, f"ComfyUI_{index}"),
+                        images=get_value_at_index(vaedecode_17, 0),
+                    )
+                    index += 1
 
 
 if __name__ == "__main__":
