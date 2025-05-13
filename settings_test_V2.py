@@ -1,320 +1,196 @@
+import click
 import os
+import math
 import random
 import sys
 from typing import Sequence, Mapping, Any, Union
-import torch
-import math
+
+@click.command()
+@click.option('--cfg-1-start', type=float, prompt="Enter the start value for cfg_1 (0-100)", 
+              default=0.0, show_default=True, help="Start value for cfg_1 (0-100)")
+@click.option('--cfg-1-end', type=float, prompt="Enter the end value for cfg_1 (cfg_1 < end value, 0-100)", 
+              default=100.0, show_default=True, help="End value for cfg_1 (must be greater than start value)")
+@click.option('--cfg-1-increment', type=float, prompt="Enter the increment value for cfg_1", 
+              default=1.0, show_default=True, help="Increment value for cfg_1 (must be positive)")
+@click.option('--cfg-2-start', type=float, prompt="Enter the start value for cfg_2 (refiner, 0-100)", 
+              default=0.0, show_default=True, help="Start value for cfg_2 (0-100)")
+@click.option('--cfg-2-end', type=float, prompt="Enter the end value for cfg_2 (cfg_2 < end value, refiner, 0-100)", 
+              default=100.0, show_default=True, help="End value for cfg_2 (must be greater than start value)")
+@click.option('--cfg-2-increment', type=float, prompt="Enter the increment value for cfg_2 (refiner)", 
+              default=1.0, show_default=True, help="Increment value for cfg_2 (must be positive)")
+@click.option('--total-steps', type=int, prompt="Enter the total number of steps (default is 50)", 
+              default=50, show_default=True, help="Total number of steps")
+@click.option('--first-steps', type=int, prompt="Enter the number of steps for the first ksampler (default is 30)", 
+              default=30, show_default=True, help="Number of steps for the first ksampler")
+@click.option('--lora-strength', type=float, prompt="Enter the strength of LoRa (float 0-100, default 0.70)", 
+              default=0.70, show_default=True, help="Strength of LoRa (0-100)")
+@click.option('--controlnet-strength', type=float, prompt="Enter the strength of controlnet (float 0-10, default 0.70)", 
+              default=0.70, show_default=True, help="Strength of controlnet (0-10)")
+@click.option('--output-dir', type=str, prompt="Enter the output directory name (default: output_images)", 
+              default="output_images", show_default=True, help="Output directory name")
 
 
-
-## assigns the range of cfg_1 and cfg_2 values by user input 
-while True:
-    try:
-        cfg_1_start = float(input("Enter the start value for cfg_1 (0-100): "))
-        if 0 <= cfg_1_start <= 100:
-            print(f"cfg_1_start set to: {cfg_1_start}")
-            break
-        else:
-            print("Value must be between 0 and 100. Please try again.")
-    except ValueError:
-        print("Invalid input. Please enter a number between 0 and 100.")
-
-while True:
-    try:
-        cfg_1_end = float(input("Enter the end value for cfg_1 (cfg_1 < end value, 0-100): "))
-        if 0 <= cfg_1_end <= 100 and cfg_1_end > cfg_1_start:
-            print(f"cfg_1_end set to: {cfg_1_end}")
-            break
-        elif cfg_1_end <= cfg_1_start:
-            print("End value must be greater than the start value. Please try again.")
-        else:
-            print("Value must be between 0 and 100. Please try again.")
-    except ValueError:
-        print("Invalid input. Please enter a number between 0 and 100.")
-
-while True:
-    try:
-        cfg_1_increment = float(input("Enter the increment value for cfg_1: "))
-        if cfg_1_increment > 0:
-            print(f"cfg_1_increment set to: {cfg_1_increment}")
-            break
-        else:
-            print("Increment must be a positive number. Please try again.")
-    except ValueError:
-        print("Invalid input. Please enter a valid number for increment.")
-
-while True:
-    try:
-        cfg_2_start = float(input("Enter the start value for cfg_2 (refiner, 0-100): "))
-        if 0 <= cfg_2_start <= 100:
-            print(f"cfg_2_start set to: {cfg_2_start}")
-            break
-        else:
-            print("Value must be between 0 and 100. Please try again.")
-    except ValueError:
-        print("Invalid input. Please enter a number between 0 and 100.")
-
-while True:
-    try:
-        cfg_2_end = float(input("Enter the end value for cfg_2 (cfg_2 < end value, refiner, 0-100): "))
-        if 0 <= cfg_2_end <= 100 and cfg_2_end > cfg_2_start:
-            print(f"cfg_2_end set to: {cfg_2_end}")
-            break
-        elif cfg_2_end <= cfg_2_start:
-            print("End value must be greater than the start value. Please try again.")
-        else:
-            print("Value must be between 0 and 100. Please try again.")
-    except ValueError:
-        print("Invalid input. Please enter a number between 0 and 100.")
-
-while True:
-    try:
-        cfg_2_increment = float(input("Enter the increment value for cfg_2 (refiner): "))
-        if cfg_2_increment > 0:
-            print(f"cfg_2_increment set to: {cfg_2_increment}")
-            break
-        else:
-            print("Increment must be a positive number. Please try again.")
-    except ValueError:
-        print("Invalid input. Please enter a valid number for increment.")
-
-
-# Assigns the range of total_steps and first_steps values by user input
-while True:
-    total_steps_input = input("Enter the total number of steps (if none is given default is 50): ")
-    if total_steps_input.strip() == "":
-        total_steps = 50
-        break
-    try:
-        total_steps = int(total_steps_input)
-        break
-    except ValueError:
-        print("Invalid input. Please enter an integer value for total steps.")
-print(f"total_steps set to: {total_steps}")
-
-while True:
-    first_steps_input = input("Enter the number of steps for the first ksampler (if none is given default is 30): ")
-    if first_steps_input.strip() == "":
-        first_steps = 30
-        break
-    try:
-        first_steps = int(first_steps_input)
-        if 0 <= first_steps <= total_steps:
-            break
-        else:
-            print(f"Value must be an integer between 0 and {total_steps}. Please try again.")
-    except ValueError:
-        print("Invalid input. Please enter an integer value.")
-print(f"first_steps set to: {first_steps}")
-
-# assign LoRa strength by user input; must be a float between 0 and 10, default is 0.70
-while True:
-    lora_strength_input = input("Enter the strength of LoRa (float 0-100, default 0.70): ")
-    if lora_strength_input.strip() == "":
-        lora_strength = 0.70
-        break
-    try:
-        lora_strength = float(lora_strength_input)
-        if 0 <= lora_strength <= 100:
-            break
-        else:
-            print("Value must be between 0 and 100. Please try again.")
-    except ValueError:
-        print("Invalid input. Please enter a float between 0 and 100.")
-print(f"lora_strength set to: {lora_strength}")
-
-# assign the strength of the controlnet by user input; must be a float between 0 and 10, default is 0.70
-while True:
-    controlnet_strength_input = input("Enter the strength of controlnet (float 0-10, default 0.70): ")
-    if controlnet_strength_input.strip() == "":
-        controlnet_strength = 0.70
-        break
-    try:
-        controlnet_strength = float(controlnet_strength_input)
-        if 0 <= controlnet_strength <= 10:
-            break
-        else:
-            print("Value must be between 0 and 10. Please try again.")
-    except ValueError:
-        print("Invalid input. Please enter a float between 0 and 10.")
-print(f"controlnet_strength set to: {controlnet_strength}")
-
-print("")
-
-## calculate amount of folders to be created
-total_folders = math.ceil(((cfg_1_end - cfg_1_start) / cfg_1_increment)) * math.ceil(((cfg_2_end - cfg_2_start) / cfg_2_increment))
-print(f"Total folders to be created: {total_folders}")
-
-## calculate amount of images to be generated
-total_images = total_folders * 4
-print(f"Total images to be generated: {total_images}")
-
-## calculate estemated size of the folder output_images
-total_size = total_images ## assuming each image is 1 MB
-print(f"Estimated size of the output folder: {total_size} MB")
-
-## calculate estimated time to generate the images
-total_time = total_images * total_steps * 0.27 + 15 ## given that 50 steps took about 13.25 seconds per image and 15 seconds for the initialization 
-print(f"Estimated time to generate the images: {total_time} seconds")
-print(f"Estimated time to generate the images: {total_time/60} minutes")
-print(f"Estimated time to generate the images: {total_time/3600} hours")
-
-print("")
-
-## ask the user for the output directory name
-output_dir_input = input("Enter the output directory name (default: output_images): ").strip()
-base_output_dir = output_dir_input if output_dir_input else "output_images"
-print(f"Output directory base name set to: {base_output_dir}")
-print("If the directory already exists, an index will be appended to create a unique folder name.")
-
-print("")
-
-## ask the user if they want to continue
-continue_choice = input("Do you want to continue? (yes/no): ").strip().lower()
-if continue_choice != "yes":
-    print("Exiting the program.")
-    exit()
-
-## Create the main output directory
-index = 1
-output_dir = base_output_dir
-while os.path.exists(output_dir):
-    output_dir = f"{base_output_dir}_{index}"
-    index += 1
-os.makedirs(output_dir)
-print(f"Output directory created: {output_dir}")
-
-## create a .txt file with the settings
-settings_file_path = os.path.join(output_dir, "settings.txt")
-with open(settings_file_path, "w") as settings_file:
-    settings_file.write(f"cfg_1_start: {cfg_1_start}\n")
-    settings_file.write(f"cfg_1_end: {cfg_1_end}\n")
-    settings_file.write(f"cfg_1_increment: {cfg_1_increment}\n")
-    settings_file.write(f"cfg_2_start: {cfg_2_start}\n")
-    settings_file.write(f"cfg_2_end: {cfg_2_end}\n")
-    settings_file.write(f"cfg_2_increment: {cfg_2_increment}\n")
-    settings_file.write(f"total_steps: {total_steps}\n")
-    settings_file.write(f"first_steps: {first_steps}\n")
-    settings_file.write(f"lora_strength: {lora_strength}\n")
-    settings_file.write(f"controlnet_strength: {controlnet_strength}\n")
-    settings_file.write(f"total_folders: {total_folders}\n")
-    settings_file.write(f"total_images: {total_images}\n")
-    settings_file.write(f"total_estemated_time: {total_time} seconds\n") 
-    settings_file.write(f"output_dir: {output_dir}\n")
-print(f"Settings saved to: {settings_file_path}")
-
-
-
-def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
-    """Returns the value at the given index of a sequence or mapping.
-
-    If the object is a sequence (like list or string), returns the value at the given index.
-    If the object is a mapping (like a dictionary), returns the value at the index-th key.
-
-    Some return a dictionary, in these cases, we look for the "results" key
-
-    Args:
-        obj (Union[Sequence, Mapping]): The object to retrieve the value from.
-        index (int): The index of the value to retrieve.
-
-    Returns:
-        Any: The value at the given index.
-
-    Raises:
-        IndexError: If the index is out of bounds for the object and the object is not a mapping.
+def main(cfg_1_start, cfg_1_end, cfg_1_increment, cfg_2_start, cfg_2_end, cfg_2_increment, 
+         total_steps, first_steps, lora_strength, controlnet_strength, output_dir):
     """
-    try:
-        return obj[index]
-    except KeyError:
-        return obj["result"][index]
-
-
-def find_path(name: str, path: str = None) -> str:
+    CLI for configuring and running the image generation process.
     """
-    Recursively looks at parent folders starting from the given path until it finds the given name.
-    Returns the path as a Path object if found, or None otherwise.
-    """
-    # If no path is given, use the current working directory
-    if path is None:
-        path = os.getcwd()
+    # Validate inputs
+    if cfg_1_end <= cfg_1_start:
+        raise click.BadParameter("cfg_1_end must be greater than cfg_1_start.")
+    if cfg_2_end <= cfg_2_start:
+        raise click.BadParameter("cfg_2_end must be greater than cfg_2_start.")
+    if cfg_1_increment <= 0 or cfg_2_increment <= 0:
+        raise click.BadParameter("Increment values must be positive.")
 
-    # Check if the current directory contains the name
-    if name in os.listdir(path):
-        path_name = os.path.join(path, name)
-        print(f"{name} found: {path_name}")
-        return path_name
+    # Calculate total folders and images
+    total_folders = math.ceil(((cfg_1_end - cfg_1_start) / cfg_1_increment)) * math.ceil(((cfg_2_end - cfg_2_start) / cfg_2_increment))
+    total_images = total_folders * 4
+    total_size = total_images  # Assuming each image is 1 MB
+    total_time = total_images * total_steps * 0.27 + 15  # Estimated time calculation
 
-    # Get the parent directory
-    parent_directory = os.path.dirname(path)
+    # Print summary
+    click.echo(f"Total folders to be created: {total_folders}")
+    click.echo(f"Total images to be generated: {total_images}")
+    click.echo(f"Estimated size of the output folder: {total_size} MB")
+    click.echo(f"Estimated time to generate the images: {total_time:.2f} seconds ({total_time/60:.2f} minutes, {total_time/3600:.2f} hours)")
 
-    # If the parent directory is the same as the current directory, we've reached the root and stop the search
-    if parent_directory == path:
-        return None
+    def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
+        """Returns the value at the given index of a sequence or mapping.
 
-    # Recursively call the function with the parent directory
-    return find_path(name, parent_directory)
+        If the object is a sequence (like list or string), returns the value at the given index.
+        If the object is a mapping (like a dictionary), returns the value at the index-th key.
 
+        Some return a dictionary, in these cases, we look for the "results" key
 
-def add_comfyui_directory_to_sys_path() -> None:
-    """
-    Add 'ComfyUI' to the sys.path
-    """
-    comfyui_path = find_path("ComfyUI")
-    if comfyui_path is not None and os.path.isdir(comfyui_path):
-        sys.path.append(comfyui_path)
-        print(f"'{comfyui_path}' added to sys.path")
+        Args:
+            obj (Union[Sequence, Mapping]): The object to retrieve the value from.
+            index (int): The index of the value to retrieve.
 
+        Returns:
+            Any: The value at the given index.
 
-def add_extra_model_paths() -> None:
-    """
-    Parse the optional extra_model_paths.yaml file and add the parsed paths to the sys.path.
-    """
-    try:
-        from main import load_extra_path_config
-    except ImportError:
-        print(
-            "Could not import load_extra_path_config from main.py. Looking in utils.extra_config instead."
-        )
-        from utils.extra_config import load_extra_path_config
-
-    extra_model_paths = find_path("extra_model_paths.yaml")
-
-    if extra_model_paths is not None:
-        load_extra_path_config(extra_model_paths)
-    else:
-        print("Could not find the extra_model_paths config file.")
-
-add_comfyui_directory_to_sys_path()
-add_extra_model_paths()
-
-def import_custom_nodes() -> None:
-    """Find all custom nodes in the custom_nodes folder and add those node objects to NODE_CLASS_MAPPINGS
-
-    This function sets up a new asyncio event loop, initializes the PromptServer,
-    creates a PromptQueue, and initializes the custom nodes.
-    """
-    import asyncio
-    import execution
-    from nodes import init_extra_nodes
-    import server
-
-    # Creating a new event loop and setting it as the default loop
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    # Creating an instance of PromptServer with the loop
-    server_instance = server.PromptServer(loop)
-    execution.PromptQueue(server_instance)
-
-    # Initializing custom nodes
-    init_extra_nodes()
+        Raises:
+            IndexError: If the index is out of bounds for the object and the object is not a mapping.
+        """
+        try:
+            return obj[index]
+        except KeyError:
+            return obj["result"][index]
 
 
-from nodes import NODE_CLASS_MAPPINGS
+    def find_path(name: str, path: str = None) -> str:
+        """
+        Recursively looks at parent folders starting from the given path until it finds the given name.
+        Returns the path as a Path object if found, or None otherwise.
+        """
+        # If no path is given, use the current working directory
+        if path is None:
+            path = os.getcwd()
+
+        # Check if the current directory contains the name
+        if name in os.listdir(path):
+            path_name = os.path.join(path, name)
+            print(f"{name} found: {path_name}")
+            return path_name
+
+        # Get the parent directory
+        parent_directory = os.path.dirname(path)
+
+        # If the parent directory is the same as the current directory, we've reached the root and stop the search
+        if parent_directory == path:
+            return None
+
+        # Recursively call the function with the parent directory
+        return find_path(name, parent_directory)
 
 
+    def add_comfyui_directory_to_sys_path() -> None:
+        """
+        Add 'ComfyUI' to the sys.path
+        """
+        comfyui_path = find_path("ComfyUI")
+        if comfyui_path is not None and os.path.isdir(comfyui_path):
+            sys.path.append(comfyui_path)
+            print(f"'{comfyui_path}' added to sys.path")
 
-def main():
+
+    def add_extra_model_paths() -> None:
+        """
+        Parse the optional extra_model_paths.yaml file and add the parsed paths to the sys.path.
+        """
+        try:
+            from main import load_extra_path_config
+        except ImportError:
+            print(
+                "Could not import load_extra_path_config from main.py. Looking in utils.extra_config instead."
+            )
+            from utils.extra_config import load_extra_path_config
+
+        extra_model_paths = find_path("extra_model_paths.yaml")
+
+        if extra_model_paths is not None:
+            load_extra_path_config(extra_model_paths)
+        else:
+            print("Could not find the extra_model_paths config file.")
+
+    add_comfyui_directory_to_sys_path()
+    add_extra_model_paths()
+
+    def import_custom_nodes() -> None:
+        """Find all custom nodes in the custom_nodes folder and add those node objects to NODE_CLASS_MAPPINGS
+
+        This function sets up a new asyncio event loop, initializes the PromptServer,
+        creates a PromptQueue, and initializes the custom nodes.
+        """
+        import asyncio
+        import execution
+        from nodes import init_extra_nodes
+        import server
+
+        # Creating a new event loop and setting it as the default loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        # Creating an instance of PromptServer with the loop
+        server_instance = server.PromptServer(loop)
+        execution.PromptQueue(server_instance)
+
+        # Initializing custom nodes
+        init_extra_nodes()
+
+
+    from nodes import NODE_CLASS_MAPPINGS
+    import_custom_nodes()
+
+    # Create output directory
+    index = 1
+    base_output_dir = output_dir
+    while os.path.exists(output_dir):
+        output_dir = f"{base_output_dir}_{index}"
+        index += 1
+    os.makedirs(output_dir)
+    click.echo(f"Output directory created: {output_dir}")
+
+    # Save settings to a file
+    settings_file_path = os.path.join(output_dir, "settings.txt")
+    with open(settings_file_path, "w") as settings_file:
+        settings_file.write(f"cfg_1_start: {cfg_1_start}\n")
+        settings_file.write(f"cfg_1_end: {cfg_1_end}\n")
+        settings_file.write(f"cfg_1_increment: {cfg_1_increment}\n")
+        settings_file.write(f"cfg_2_start: {cfg_2_start}\n")
+        settings_file.write(f"cfg_2_end: {cfg_2_end}\n")
+        settings_file.write(f"cfg_2_increment: {cfg_2_increment}\n")
+        settings_file.write(f"total_steps: {total_steps}\n")
+        settings_file.write(f"first_steps: {first_steps}\n")
+        settings_file.write(f"lora_strength: {lora_strength}\n")
+        settings_file.write(f"controlnet_strength: {controlnet_strength}\n")
+        settings_file.write(f"total_folders: {total_folders}\n")
+        settings_file.write(f"total_images: {total_images}\n")
+        settings_file.write(f"total_estimated_time: {total_time} seconds\n")
+        settings_file.write(f"output_dir: {output_dir}\n")
+    click.echo(f"Settings saved to: {settings_file_path}")
+
     import_custom_nodes()
     with torch.inference_mode():    
         ###### Load all Nodes ######
@@ -608,7 +484,6 @@ def main():
                         images=get_value_at_index(vaedecode_17, 0),
                     )
                     index += 1
-
 
 if __name__ == "__main__":
     main()
