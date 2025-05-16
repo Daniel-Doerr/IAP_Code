@@ -6,45 +6,83 @@ import sys
 from typing import Sequence, Mapping, Any, Union
 
 @click.command()
-@click.option('--cfg-1-start', type=float, prompt="Enter the start value for cfg_1 (0-100)", 
-              default=0.0, show_default=True, help="Start value for cfg_1 (0-100)")
-@click.option('--cfg-1-end', type=float, prompt="Enter the end value for cfg_1 (cfg_1 < end value, 0-100)", 
-              default=100.0, show_default=True, help="End value for cfg_1 (must be greater than start value)")
-@click.option('--cfg-1-increment', type=float, prompt="Enter the increment value for cfg_1", 
-              default=1.0, show_default=True, help="Increment value for cfg_1 (must be positive)")
-@click.option('--cfg-2-start', type=float, prompt="Enter the start value for cfg_2 (refiner, 0-100)", 
-              default=0.0, show_default=True, help="Start value for cfg_2 (0-100)")
-@click.option('--cfg-2-end', type=float, prompt="Enter the end value for cfg_2 (cfg_2 < end value, refiner, 0-100)", 
-              default=100.0, show_default=True, help="End value for cfg_2 (must be greater than start value)")
-@click.option('--cfg-2-increment', type=float, prompt="Enter the increment value for cfg_2 (refiner)", 
-              default=1.0, show_default=True, help="Increment value for cfg_2 (must be positive)")
-@click.option('--total-steps', type=int, prompt="Enter the total number of steps (default is 50)", 
+@click.option('--cfg-1', type=str, prompt="Enter cfg_1 values as 'start,end,increment'", 
+              default="8.0,10.0,1.0", show_default=True, 
+              help="Comma-separated values for cfg_1: start,end,increment (e.g., 0.0,100.0,1.0)")
+
+@click.option('--cfg-2', type=str, prompt="Enter cfg_2 values as 'start,end,increment'", 
+              default="6.0,8.0,1.0", show_default=True, 
+              help="Comma-separated values for cfg_2: start,end,increment (e.g., 0.0,100.0,1.0)")
+
+@click.option('--total-steps', type=int, prompt="Enter the total number of steps", 
               default=50, show_default=True, help="Total number of steps")
-@click.option('--first-steps', type=int, prompt="Enter the number of steps for the first ksampler (default is 30)", 
+
+@click.option('--first-steps', type=int, prompt="Enter the number of steps for the first ksampler", 
               default=30, show_default=True, help="Number of steps for the first ksampler")
-@click.option('--lora-strength', type=float, prompt="Enter the strength of LoRa (float 0-100, default 0.70)", 
-              default=0.70, show_default=True, help="Strength of LoRa (0-100)")
-@click.option('--controlnet-strength', type=float, prompt="Enter the strength of controlnet (float 0-10, default 0.70)", 
-              default=0.70, show_default=True, help="Strength of controlnet (0-10)")
+
+
+@click.option('--lora-strength', type=str, prompt="Enter lora strength values as 'start,end,increment' max:100 (if increment is 0, only one value will be used)", 
+              default="0.7,0.0,0.0", show_default=True, 
+              help="Comma-separated values for lora strenght: start,end,increment (e.g., 0.7,0.0,0.0)")
+
+
+@click.option('--controlnet-strength', type=str, prompt="Enter controlnet strength values as 'start,end,increment' max:10 (if increment is 0, only one value will be used)", 
+              default="0.7,0.0,0.0", show_default=True, 
+              help="Comma-separated values for controlnet strenght: start,end,increment (e.g., 0.7,0.0,0.0)")
+
+
 @click.option('--output-dir', type=str, prompt="Enter the output directory name (default: output_images)", 
               default="output_images", show_default=True, help="Output directory name")
 
 
-def main(cfg_1_start, cfg_1_end, cfg_1_increment, cfg_2_start, cfg_2_end, cfg_2_increment, 
-         total_steps, first_steps, lora_strength, controlnet_strength, output_dir):
-    """
-    CLI for configuring and running the image generation process.
-    """
-    # Validate inputs
-    if cfg_1_end <= cfg_1_start:
-        raise click.BadParameter("cfg_1_end must be greater than cfg_1_start.")
-    if cfg_2_end <= cfg_2_start:
-        raise click.BadParameter("cfg_2_end must be greater than cfg_2_start.")
-    if cfg_1_increment <= 0 or cfg_2_increment <= 0:
-        raise click.BadParameter("Increment values must be positive.")
+def main(cfg_1, cfg_2, total_steps, first_steps, lora_strength, controlnet_strength, output_dir):
+    cfg_1_start, cfg_1_end, cfg_1_increment = map(float, cfg_1.split(','))
+    cfg_2_start, cfg_2_end, cfg_2_increment = map(float, cfg_2.split(','))
+    lora_start, lora_end, lora_increment = map(float, lora_strength.split(','))
+    controlnet_start, controlnet_end, controlnet_increment = map(float, controlnet_strength.split(','))
+
+    ## if the increment is 0, only go through the loop once
+    def check_if_zero(start: float, end: float, increment: float):
+        if increment == 0:
+            increment = 1.0
+            end = start + 0.5
+        return start, end, increment
+        
+    cfg_1_start, cfg_1_end, cfg_1_increment = check_if_zero(cfg_1_start, cfg_1_end, cfg_1_increment)
+    cfg_2_start, cfg_2_end, cfg_2_increment = check_if_zero(cfg_2_start, cfg_2_end, cfg_2_increment)
+    lora_start, lora_end, lora_increment = check_if_zero(lora_start, lora_end, lora_increment)
+    controlnet_start, controlnet_end, controlnet_increment = check_if_zero(controlnet_start, controlnet_end, controlnet_increment)
+
+
+    ## Check if the start and end values are in the right order
+    def swap_if_needed(start: float, end: float):
+        if start > end:
+            tmp = start
+            start = end
+            end = tmp
+        return start, end
+    
+    cfg_1_start, cfg_1_end = swap_if_needed(cfg_1_start, cfg_1_end)
+    cfg_2_start, cfg_2_end = swap_if_needed(cfg_2_start, cfg_2_end)
+    lora_start, lora_end = swap_if_needed(lora_start, lora_end)
+    controlnet_start, controlnet_end = swap_if_needed(controlnet_start, controlnet_end)
+
+    ## Check if the increments are negative
+    if cfg_1_increment < 0:
+        cfg_1_increment = -cfg_1_increment
+    if cfg_2_increment < 0:
+        cfg_2_increment = -cfg_2_increment
+    if lora_increment < 0:
+        lora_increment = -lora_increment
+    if controlnet_increment < 0:
+        controlnet_increment = -controlnet_increment
+
 
     # Calculate total folders and images
-    total_folders = math.ceil(((cfg_1_end - cfg_1_start) / cfg_1_increment)) * math.ceil(((cfg_2_end - cfg_2_start) / cfg_2_increment))
+    cfg_folders = (math.floor((cfg_1_end - cfg_1_start) / cfg_1_increment)+1) * (math.floor((cfg_2_end - cfg_2_start) / cfg_2_increment)+1)
+    lora_folders = math.floor((lora_end - lora_start) / lora_increment)+1
+    controlnet_folders = math.floor((controlnet_end - controlnet_start) / controlnet_increment)+1
+    total_folders = cfg_folders * lora_folders * controlnet_folders
     total_images = total_folders * 4
     total_size = total_images  # Assuming each image is 1 MB
     total_time = total_images * total_steps * 0.27 + 15  # Estimated time calculation
@@ -54,6 +92,44 @@ def main(cfg_1_start, cfg_1_end, cfg_1_increment, cfg_2_start, cfg_2_end, cfg_2_
     click.echo(f"Total images to be generated: {total_images}")
     click.echo(f"Estimated size of the output folder: {total_size} MB")
     click.echo(f"Estimated time to generate the images: {total_time:.2f} seconds ({total_time/60:.2f} minutes, {total_time/3600:.2f} hours)")
+
+    continue_choice = input("Do you want to continue? (yes/no): ").strip().lower()
+    if continue_choice != "yes":
+        print("Exiting the program.")
+        exit()
+
+    ## Create output directory
+    index = 1
+    base_output_dir = output_dir
+    while os.path.exists(output_dir):
+        output_dir = f"{base_output_dir}_{index}"
+        index += 1
+    os.makedirs(output_dir)
+    click.echo(f"Output directory created: {output_dir}")
+
+    ## Save settings to a file
+    settings_file_path = os.path.join(output_dir, "settings.txt")
+    with open(settings_file_path, "w") as settings_file:
+        settings_file.write(f"cfg_1_start: {cfg_1_start}\n")
+        settings_file.write(f"cfg_1_end: {cfg_1_end}\n")
+        settings_file.write(f"cfg_1_increment: {cfg_1_increment}\n")
+        settings_file.write(f"cfg_2_start: {cfg_2_start}\n")
+        settings_file.write(f"cfg_2_end: {cfg_2_end}\n")
+        settings_file.write(f"cfg_2_increment: {cfg_2_increment}\n")
+        settings_file.write(f"total_steps: {total_steps}\n")
+        settings_file.write(f"first_steps: {first_steps}\n")
+        settings_file.write(f"lora_start: {lora_start}\n")
+        settings_file.write(f"lora_end: {lora_end}\n")
+        settings_file.write(f"lora_increment: {lora_increment}\n")
+        settings_file.write(f"controlnet_start: {controlnet_start}\n")
+        settings_file.write(f"controlnet_end: {controlnet_end}\n")
+        settings_file.write(f"controlnet_increment: {controlnet_increment}\n")
+        settings_file.write(f"total_folders: {total_folders}\n")
+        settings_file.write(f"total_images: {total_images}\n")
+        settings_file.write(f"total_estimated_time: {total_time} seconds\n")
+        settings_file.write(f"output_dir: {output_dir}\n")
+    click.echo(f"Settings saved to: {settings_file_path}")
+
 
     def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
         """Returns the value at the given index of a sequence or mapping.
@@ -163,33 +239,6 @@ def main(cfg_1_start, cfg_1_end, cfg_1_increment, cfg_2_start, cfg_2_end, cfg_2_
     from nodes import NODE_CLASS_MAPPINGS
     import_custom_nodes()
 
-    # Create output directory
-    index = 1
-    base_output_dir = output_dir
-    while os.path.exists(output_dir):
-        output_dir = f"{base_output_dir}_{index}"
-        index += 1
-    os.makedirs(output_dir)
-    click.echo(f"Output directory created: {output_dir}")
-
-    # Save settings to a file
-    settings_file_path = os.path.join(output_dir, "settings.txt")
-    with open(settings_file_path, "w") as settings_file:
-        settings_file.write(f"cfg_1_start: {cfg_1_start}\n")
-        settings_file.write(f"cfg_1_end: {cfg_1_end}\n")
-        settings_file.write(f"cfg_1_increment: {cfg_1_increment}\n")
-        settings_file.write(f"cfg_2_start: {cfg_2_start}\n")
-        settings_file.write(f"cfg_2_end: {cfg_2_end}\n")
-        settings_file.write(f"cfg_2_increment: {cfg_2_increment}\n")
-        settings_file.write(f"total_steps: {total_steps}\n")
-        settings_file.write(f"first_steps: {first_steps}\n")
-        settings_file.write(f"lora_strength: {lora_strength}\n")
-        settings_file.write(f"controlnet_strength: {controlnet_strength}\n")
-        settings_file.write(f"total_folders: {total_folders}\n")
-        settings_file.write(f"total_images: {total_images}\n")
-        settings_file.write(f"total_estimated_time: {total_time} seconds\n")
-        settings_file.write(f"output_dir: {output_dir}\n")
-    click.echo(f"Settings saved to: {settings_file_path}")
 
     import_custom_nodes()
     with torch.inference_mode():    
@@ -263,21 +312,6 @@ def main(cfg_1_start, cfg_1_end, cfg_1_increment, cfg_2_start, cfg_2_end, cfg_2_
         controlnetloader_52 = controlnetloader.load_controlnet(
             control_net_name="SDXL/controlnet-union-sdxl-1.0/diffusion_pytorch_model_promax.safetensors"
         )
-
-        ## load LoRA with strength of model and clip 
-        loraloader_68 = loraloader.load_lora(
-            lora_name="xraylorasdxl.safetensors",
-            strength_model=lora_strength,
-            strength_clip=1,
-            model=get_value_at_index(checkpointloadersimple_4, 0),
-            clip=get_value_at_index(checkpointloadersimple_4, 1),
-        )
-
-        ## load ipadapter strength model
-        ipadapterunifiedloader_63 = ipadapterunifiedloader.load_models(
-            preset="VIT-G (medium strength)",
-            model=get_value_at_index(loraloader_68, 0),
-        )
         ############
         
 
@@ -288,24 +322,9 @@ def main(cfg_1_start, cfg_1_end, cfg_1_increment, cfg_2_start, cfg_2_end, cfg_2_
             width=1024, height=1024, batch_size=1
         )
         ############
-        
-
-        
 
 
         ###### Load prompts ######
-        ## load positive prompt 
-        cliptextencode_6 = cliptextencode.encode(
-            text="masterpiece, best quality, ultra-detailed, high resolution, sharp focus, pseudo-x-ray scan of a plush toy, revealing an anatomically plausible, realistic skeleton with detailed bones inside, medical imaging style, monochrome, grayscale, black and white, xray style",
-            clip=get_value_at_index(loraloader_68, 1),
-        )
-
-        ## load negative prompt 
-        cliptextencode_7 = cliptextencode.encode(
-            text="worst quality, low quality, blurry, noisy, text, signature, watermark, UI, cartoon, drawing, illustration, sketch, painting, anime, 3D render, (photorealistic plush toy), (visible fabric texture), (visible stuffing), colorful, vibrant colors, toy bones, plastic bones, cartoon bones, unrealistic skeleton, bad anatomy, deformed skeleton, disfigured, mutated limbs, extra limbs, fused bones, skin, fur, organs, background clutter, multiple animals",
-            clip=get_value_at_index(loraloader_68, 1),
-        )
-
         ## load positive prompt refiner (same as normal prompt)
         cliptextencode_15 = cliptextencode.encode(
             text="masterpiece, best quality, ultra-detailed, high resolution, sharp focus, pseudo-x-ray scan of a plush toy, revealing an anatomically plausible, realistic skeleton with detailed bones inside, medical imaging style, monochrome, grayscale, black and white, xray style",
@@ -377,17 +396,6 @@ def main(cfg_1_start, cfg_1_end, cfg_1_increment, cfg_2_start, cfg_2_end, cfg_2_
             image1=get_value_at_index(imagebatch_75, 0),
             image2=get_value_at_index(loadimage_77, 0),
         )
-
-        ## load the combined images in the ipadapter
-        ipadapter_58 = ipadapter.apply_ipadapter(
-            weight=1,
-            start_at=0,
-            end_at=1,
-            weight_type="standard",
-            model=get_value_at_index(ipadapterunifiedloader_63, 0),
-            ipadapter=get_value_at_index(ipadapterunifiedloader_63, 1),
-            image=get_value_at_index(imagebatch_76, 0),
-        )
         ############
 
 
@@ -395,95 +403,147 @@ def main(cfg_1_start, cfg_1_end, cfg_1_increment, cfg_2_start, cfg_2_end, cfg_2_
         image = ["image1.png", "image2.png", "image3.png", "image4.png"]
         index = 0
 
+    
+        lora_strength = lora_start
+        while lora_strength <= lora_end:
+            ## load LoRA with strength of model and clip 
+            loraloader_68 = loraloader.load_lora(
+                lora_name="xraylorasdxl.safetensors",
+                strength_model=lora_strength,
+                strength_clip=1,
+                model=get_value_at_index(checkpointloadersimple_4, 0),
+                clip=get_value_at_index(checkpointloadersimple_4, 1),
+            )
 
-        def float_range(start, end, step):
-            while start < end:
-                yield round(start, 10)
-                start += step
+            ## load ipadapter strength model
+            ipadapterunifiedloader_63 = ipadapterunifiedloader.load_models(
+                preset="VIT-G (medium strength)",
+                model=get_value_at_index(loraloader_68, 0),
+            )
+            
+            ## load positive prompt 
+            cliptextencode_6 = cliptextencode.encode(
+                text="masterpiece, best quality, ultra-detailed, high resolution, sharp focus, pseudo-x-ray scan of a plush toy, revealing an anatomically plausible, realistic skeleton with detailed bones inside, medical imaging style, monochrome, grayscale, black and white, xray style",
+                clip=get_value_at_index(loraloader_68, 1),
+            )
 
-        for cfg_1 in float_range(cfg_1_start, cfg_1_end, cfg_1_increment):
-            for cfg_2 in float_range(cfg_2_start, cfg_2_end, cfg_2_increment):
-                ## Create a subdirectory for each combination of cfg_1 and cfg_2
-                sub_dir = os.path.join(output_dir, f"cfg_{cfg_1}_{cfg_2}")
+            ## load negative prompt 
+            cliptextencode_7 = cliptextencode.encode(
+                text="worst quality, low quality, blurry, noisy, text, signature, watermark, UI, cartoon, drawing, illustration, sketch, painting, anime, 3D render, (photorealistic plush toy), (visible fabric texture), (visible stuffing), colorful, vibrant colors, toy bones, plastic bones, cartoon bones, unrealistic skeleton, bad anatomy, deformed skeleton, disfigured, mutated limbs, extra limbs, fused bones, skin, fur, organs, background clutter, multiple animals",
+                clip=get_value_at_index(loraloader_68, 1),
+            )
+
+            ## load the combined images in the ipadapter
+            ipadapter_58 = ipadapter.apply_ipadapter(
+                weight=1,
+                start_at=0,
+                end_at=1,
+                weight_type="standard",
+                model=get_value_at_index(ipadapterunifiedloader_63, 0),
+                ipadapter=get_value_at_index(ipadapterunifiedloader_63, 1),
+                image=get_value_at_index(imagebatch_76, 0),
+            )
+            
+
+            controlnet_strength = controlnet_start
+            while controlnet_strength <= controlnet_end:
+                sub_dir = os.path.join(output_dir, f"lora_{lora_strength}_controlnet_{controlnet_strength}")
                 if not os.path.exists(sub_dir):
                     os.makedirs(sub_dir)
 
-                for i in range(4):
-                    ## input image
-                    loadimage_50 = loadimage.load_image(
-                        image=image[i]
-                    )
+                cfg_1 = cfg_1_start
+                while cfg_1 <= cfg_1_end:
+                    
+                    cfg_2 = cfg_2_start
+                    while cfg_2 <= cfg_2_end:
+                        
+                        ## Create a subdirectory for each combination of cfg_1 and cfg_2
+                        sub_sub_dir = os.path.join(sub_dir, f"cfg_{cfg_1}_{cfg_2}")
+                        if not os.path.exists(sub_sub_dir):
+                            os.makedirs(sub_sub_dir)
 
-                    ## load unconnected vae loader (unnecessary)
-                    vaeencode_51 = vaeencode.encode(
-                        pixels=get_value_at_index(loadimage_50, 0),
-                        vae=get_value_at_index(checkpointloadersimple_4, 2),
-                    )
+                        for i in range(4):
+                            ## input image
+                            loadimage_50 = loadimage.load_image(
+                                image=image[i]
+                            )
 
-                    ## creating depth image for controlnet
-                    depthanythingpreprocessor_55 = depthanythingpreprocessor.execute(
-                        ckpt_name="depth_anything_vitb14.pth",
-                        resolution=512,
-                        image=get_value_at_index(loadimage_50, 0),
-                    )
+                            ## load unconnected vae loader (unnecessary)
+                            vaeencode_51 = vaeencode.encode(
+                                pixels=get_value_at_index(loadimage_50, 0),
+                                vae=get_value_at_index(checkpointloadersimple_4, 2),
+                            )
 
-                    ## applies the controlnet 
-                    controlnetapplyadvanced_54 = controlnetapplyadvanced.apply_controlnet(
-                        strength=controlnet_strength,
-                        start_percent=0,
-                        end_percent=1,
-                        positive=get_value_at_index(cliptextencode_6, 0),
-                        negative=get_value_at_index(cliptextencode_7, 0),
-                        control_net=get_value_at_index(controlnetloader_52, 0),
-                        image=get_value_at_index(depthanythingpreprocessor_55, 0),
-                    )
+                            ## creating depth image for controlnet
+                            depthanythingpreprocessor_55 = depthanythingpreprocessor.execute(
+                                ckpt_name="depth_anything_vitb14.pth",
+                                resolution=512,
+                                image=get_value_at_index(loadimage_50, 0),
+                            )
 
-                    ## first ksampler advanced with noise
-                    ksampleradvanced_10 = ksampleradvanced.sample(
-                        add_noise="enable",
-                        noise_seed=random.randint(1, 2**64),
-                        steps=total_steps,
-                        cfg=cfg_1,
-                        sampler_name="euler",
-                        scheduler="sgm_uniform",
-                        start_at_step=0,
-                        end_at_step=first_steps,
-                        return_with_leftover_noise="enable",
-                        model=get_value_at_index(ipadapter_58, 0),
-                        positive=get_value_at_index(controlnetapplyadvanced_54, 0),
-                        negative=get_value_at_index(controlnetapplyadvanced_54, 1),
-                        latent_image=get_value_at_index(emptylatentimage_5, 0),
-                    )
+                            ## applies the controlnet 
+                            controlnetapplyadvanced_54 = controlnetapplyadvanced.apply_controlnet(
+                                strength=controlnet_strength,
+                                start_percent=0,
+                                end_percent=1,
+                                positive=get_value_at_index(cliptextencode_6, 0),
+                                negative=get_value_at_index(cliptextencode_7, 0),
+                                control_net=get_value_at_index(controlnetloader_52, 0),
+                                image=get_value_at_index(depthanythingpreprocessor_55, 0),
+                            )
 
-                    ## second ksampler advanced without noise
-                    ksampleradvanced_11 = ksampleradvanced.sample(
-                        add_noise="disable",
-                        noise_seed=random.randint(1, 2**64),
-                        steps=total_steps,
-                        cfg=cfg_2,
-                        sampler_name="euler",
-                        scheduler="normal",
-                        start_at_step=first_steps,
-                        end_at_step=10000,
-                        return_with_leftover_noise="disable",
-                        model=get_value_at_index(checkpointloadersimple_12, 0),
-                        positive=get_value_at_index(cliptextencode_15, 0),
-                        negative=get_value_at_index(cliptextencode_16, 0),
-                        latent_image=get_value_at_index(ksampleradvanced_10, 0),
-                    )
+                            ## first ksampler advanced with noise
+                            ksampleradvanced_10 = ksampleradvanced.sample(
+                                add_noise="enable",
+                                noise_seed=random.randint(1, 2**64),
+                                steps=total_steps,
+                                cfg=cfg_1,
+                                sampler_name="euler",
+                                scheduler="sgm_uniform",
+                                start_at_step=0,
+                                end_at_step=first_steps,
+                                return_with_leftover_noise="enable",
+                                model=get_value_at_index(ipadapter_58, 0),
+                                positive=get_value_at_index(controlnetapplyadvanced_54, 0),
+                                negative=get_value_at_index(controlnetapplyadvanced_54, 1),
+                                latent_image=get_value_at_index(emptylatentimage_5, 0),
+                            )
 
-                    ## vae decode image (output image)
-                    vaedecode_17 = vaedecode.decode(
-                        samples=get_value_at_index(ksampleradvanced_11, 0),
-                        vae=get_value_at_index(checkpointloadersimple_12, 2),
-                    )
+                            ## second ksampler advanced without noise
+                            ksampleradvanced_11 = ksampleradvanced.sample(
+                                add_noise="disable",
+                                noise_seed=random.randint(1, 2**64),
+                                steps=total_steps,
+                                cfg=cfg_2,
+                                sampler_name="euler",
+                                scheduler="normal",
+                                start_at_step=first_steps,
+                                end_at_step=10000,
+                                return_with_leftover_noise="disable",
+                                model=get_value_at_index(checkpointloadersimple_12, 0),
+                                positive=get_value_at_index(cliptextencode_15, 0),
+                                negative=get_value_at_index(cliptextencode_16, 0),
+                                latent_image=get_value_at_index(ksampleradvanced_10, 0),
+                            )
 
-                    # Save the images in the respective subdirectory
-                    saveimage.save_images(
-                        filename_prefix=os.path.join(sub_dir, f"ComfyUI_{index}"),
-                        images=get_value_at_index(vaedecode_17, 0),
-                    )
-                    index += 1
+                            ## vae decode image (output image)
+                            vaedecode_17 = vaedecode.decode(
+                                samples=get_value_at_index(ksampleradvanced_11, 0),
+                                vae=get_value_at_index(checkpointloadersimple_12, 2),
+                            )
+
+                            # Save the images in the respective subdirectory
+                            saveimage.save_images(
+                                filename_prefix=os.path.join(sub_sub_dir, f"ComfyUI_{index}"),
+                                images=get_value_at_index(vaedecode_17, 0),
+                            )
+                            index += 1
+                        cfg_2 += cfg_2_increment
+                    cfg_1+= cfg_1_increment
+                controlnet_strength += controlnet_increment
+            lora_strength += lora_increment
+
+
 
 if __name__ == "__main__":
     main()
