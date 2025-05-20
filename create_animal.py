@@ -188,11 +188,11 @@ def load_animal_image(base_path, animal, view):
         folder_path = os.path.join(base_path, fallback_folder)
 
     # Create filename
-    filename = f"{animal.lower()}_{view}.jpg"
+    filename = f"{animal.lower()}_{view}.png"
     image_path = os.path.join(folder_path, filename)
 
     if os.path.exists(image_path):
-        return Image.open(image_path)
+        return image_path  
     else:
         raise FileNotFoundError(f"Image not found: {image_path}")
     
@@ -221,7 +221,7 @@ def main(animal, amount_of_images):
             clip=get_value_at_index(checkpointloadersimple_12, 1),
         )
 
-        base_path = "Input_animals"
+        base_path = "/mnt/data/tbkh2025_dk/ComfyUI/Input_animals"
 
         # IPAdapter images 
         loadimage_60 = loadimage.load_image(image=load_animal_image(base_path, animal, "front"))
@@ -389,14 +389,31 @@ def main(animal, amount_of_images):
                 font_file="en-AllRoundItalic.ttf",
                 image=get_value_at_index(imagecompositemasked_112, 0),
             )
+            image = get_value_at_index(textonimage_115, 0)
+            arr = image.cpu().numpy()
 
-            image=get_value_at_index(textonimage_115, 0)
-            i = 255. * image.cpu().numpy()
-            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
-            img_bytes = io.BytesIO()
-            img.save(img_bytes, format="PNG")
-            img_bytes.seek(0)
-            # Now img_bytes can be returned as a response in a web server (e.g., Flask: send_file(img_bytes, mimetype='image/png'))
+            # Remove extra dimensions if present
+            arr = np.squeeze(arr)  # removes dimensions of size 1
+
+            # If shape is (H, W, 4) or (H, W, 3), continue. If (4, H, W), transpose.
+            if arr.ndim == 3 and arr.shape[0] in [1, 3, 4]:
+                arr = np.transpose(arr, (1, 2, 0))  # (C, H, W) -> (H, W, C)
+
+            arr = np.clip(arr * 255, 0, 255).astype(np.uint8)
+
+            img = Image.fromarray(arr)
+
+            output_dir = f"/mnt/data/tbkh2025_dk/ComfyUI/Output_animals/{animal.lower()}"
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+
+            index = 1
+            png_name = f"{animal.lower()}_{index}"
+            while os.path.exists(os.path.join(output_dir, f"{png_name}.png")):
+                index += 1
+                png_name = f"{animal.lower()}_{index}"
+            
+            img.save(os.path.join(output_dir, f"{png_name}.png"), format="PNG")
 
             
 
@@ -411,4 +428,3 @@ if __name__ == "__main__":
             print(f"Error: {e}")
             print("Retrying...")
             continue
-        break
