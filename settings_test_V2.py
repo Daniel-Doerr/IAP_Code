@@ -3,6 +3,7 @@ import os
 import math
 import random
 import sys
+import torch
 from typing import Sequence, Mapping, Any, Union
 
 @click.command()
@@ -237,11 +238,10 @@ def main(cfg_1, cfg_2, total_steps, first_steps, lora_strength, controlnet_stren
 
 
     from nodes import NODE_CLASS_MAPPINGS
-    import_custom_nodes()
 
-
-    import_custom_nodes()
-    with torch.inference_mode():    
+    
+    with torch.inference_mode():  
+        import_custom_nodes()  
         ###### Load all Nodes ######
         ## loads Stable Diffusion node
         checkpointloadersimple = NODE_CLASS_MAPPINGS["CheckpointLoaderSimple"]()
