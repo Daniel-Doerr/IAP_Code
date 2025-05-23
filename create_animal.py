@@ -121,16 +121,32 @@ import io
 import_custom_nodes()
 with torch.inference_mode():
     checkpointloadersimple = NODE_CLASS_MAPPINGS["CheckpointLoaderSimple"]()
+    emptylatentimage = NODE_CLASS_MAPPINGS["EmptyLatentImage"]()
+    loraloader = NODE_CLASS_MAPPINGS["LoraLoader"]()
+    cliptextencode = NODE_CLASS_MAPPINGS["CLIPTextEncode"]()
+    loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
+    controlnetloader = NODE_CLASS_MAPPINGS["ControlNetLoader"]()
+    ipadapterunifiedloader = NODE_CLASS_MAPPINGS["IPAdapterUnifiedLoader"]()
+    imagebatch = NODE_CLASS_MAPPINGS["ImageBatch"]()
+    ipadapter = NODE_CLASS_MAPPINGS["IPAdapter"]()
+    imageresizekj = NODE_CLASS_MAPPINGS["ImageResizeKJ"]()
+    image_rembg_remove_background = NODE_CLASS_MAPPINGS["Image Rembg (Remove Background)"]()
+    depthanythingpreprocessor = NODE_CLASS_MAPPINGS["DepthAnythingPreprocessor"]()
+    controlnetapplyadvanced = NODE_CLASS_MAPPINGS["ControlNetApplyAdvanced"]()
+    ksampleradvanced = NODE_CLASS_MAPPINGS["KSamplerAdvanced"]()
+    vaedecode = NODE_CLASS_MAPPINGS["VAEDecode"]()
+    imagecompositemasked = NODE_CLASS_MAPPINGS["ImageCompositeMasked"]()
+    textonimage = NODE_CLASS_MAPPINGS["TextOnImage"]()
+    saveimage = NODE_CLASS_MAPPINGS["SaveImage"]()
+
     checkpointloadersimple_4 = checkpointloadersimple.load_checkpoint(
         ckpt_name="sd_xl_base_1.0.safetensors"
     )
 
-    emptylatentimage = NODE_CLASS_MAPPINGS["EmptyLatentImage"]()
     emptylatentimage_5 = emptylatentimage.generate(
-        width=1024, height=1152, batch_size=1
+        width=1024, height=1024, batch_size=1
     )
-
-    loraloader = NODE_CLASS_MAPPINGS["LoraLoader"]()
+    
     loraloader_68 = loraloader.load_lora(
         lora_name="xraylorasdxl.safetensors",
         strength_model=1.0000000000000002,
@@ -139,8 +155,6 @@ with torch.inference_mode():
         clip=get_value_at_index(checkpointloadersimple_4, 1),
     )
 
-    cliptextencode = NODE_CLASS_MAPPINGS["CLIPTextEncode"]()
-    
     cliptextencode_7 = cliptextencode.encode(
         text="worst quality, low quality, blurry, noisy, text, signature, watermark, UI, cartoon, drawing, illustration, sketch, painting, anime, 3D render, (photorealistic plush toy), (visible fabric texture), (visible stuffing), colorful, vibrant colors, toy bones, plastic bones, cartoon bones, unrealistic skeleton, bad anatomy, deformed skeleton, disfigured, mutated limbs, extra limbs, fused bones, skin, fur, organs, background clutter, multiple animals",
         clip=get_value_at_index(loraloader_68, 1),
@@ -155,27 +169,18 @@ with torch.inference_mode():
         clip=get_value_at_index(checkpointloadersimple_12, 1),
     )
 
-    loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
-    
-    controlnetloader = NODE_CLASS_MAPPINGS["ControlNetLoader"]()
     controlnetloader_52 = controlnetloader.load_controlnet(
         control_net_name="SDXL/controlnet-union-sdxl-1.0/diffusion_pytorch_model_promax.safetensors"
     )
-
-    ipadapterunifiedloader = NODE_CLASS_MAPPINGS["IPAdapterUnifiedLoader"]()
-    imagebatch = NODE_CLASS_MAPPINGS["ImageBatch"]()
-    ipadapter = NODE_CLASS_MAPPINGS["IPAdapter"]()
-    imageresizekj = NODE_CLASS_MAPPINGS["ImageResizeKJ"]()
-    image_rembg_remove_background = NODE_CLASS_MAPPINGS["Image Rembg (Remove Background)"]()
-    depthanythingpreprocessor = NODE_CLASS_MAPPINGS["DepthAnythingPreprocessor"]()
-    controlnetapplyadvanced = NODE_CLASS_MAPPINGS["ControlNetApplyAdvanced"]()
-    ksampleradvanced = NODE_CLASS_MAPPINGS["KSamplerAdvanced"]()
-    vaedecode = NODE_CLASS_MAPPINGS["VAEDecode"]()
-    imagecompositemasked = NODE_CLASS_MAPPINGS["ImageCompositeMasked"]()
-    textonimage = NODE_CLASS_MAPPINGS["TextOnImage"]()
-    saveimage = NODE_CLASS_MAPPINGS["SaveImage"]()
     ## Watermark images
     loadimage_111 = loadimage.load_image(image="pasted/image.png")
+
+    ipadapterunifiedloader_63 = ipadapterunifiedloader.load_models(
+        preset="STANDARD (medium strength)",
+        model=get_value_at_index(loraloader_68, 0),
+    )
+
+
 
 
 def load_animal_image(base_path, animal, view):
@@ -196,31 +201,9 @@ def load_animal_image(base_path, animal, view):
     else:
         raise FileNotFoundError(f"Image not found: {image_path}")
     
-animals = ["Anteater","Cat","Crocodile","Dog","Dragon","Duck","Frog","Giraffe","Hedgehog","Horse","Lion","Monkey","Mouse","Penguin","Pig","Rabbit","Seal","Sheep"]
-print(animals)
 
-@click.command()
-@click.option('--animal', type=str, prompt="Which animal should be generated?", 
-              default="frog", show_default=True, 
-              help="The animal to generate (e.g., frog, cat, dog)")
-@click.option('--amount-of-images', type=int, prompt="How many images should be generated?", 
-              default=1, show_default=True, 
-              help="Number of images to generate")
-
-
-def main(animal, amount_of_images):
+def load_IPAdapter(animal):
     with torch.inference_mode():
-        # positive prompt
-        cliptextencode_6 = cliptextencode.encode(
-            text=f"masterpiece, best quality, ultra-detailed, high resolution, sharp focus, pseudo-x-ray scan of a {animal} plush toy, revealing an anatomically plausible, realistic skeleton with detailed bones inside, medical imaging style, monochrome, grayscale, black and white, xray style",
-            clip=get_value_at_index(loraloader_68, 1),
-        )
-
-        cliptextencode_15 = cliptextencode.encode(
-            text=f"masterpiece, best quality, ultra-detailed, high resolution, sharp focus, pseudo-x-ray scan of a {animal} plush toy, revealing an anatomically plausible, realistic skeleton with detailed bones inside, medical imaging style, monochrome, grayscale, black and white, xray style",
-            clip=get_value_at_index(checkpointloadersimple_12, 1),
-        )
-
         base_path = "/mnt/data/tbkh2025_dk/ComfyUI/Input_animals"
 
         # IPAdapter images 
@@ -228,16 +211,6 @@ def main(animal, amount_of_images):
         loadimage_64 = loadimage.load_image(image=load_animal_image(base_path, animal, "back"))
         loadimage_71 = loadimage.load_image(image=load_animal_image(base_path, animal, "side"))
         loadimage_72 = loadimage.load_image(image=load_animal_image(base_path, animal, "front2"))
-
-        # input image
-        loadimage_50 = loadimage.load_image(
-            image=load_animal_image(base_path, animal, "original")
-        )
-
-        ipadapterunifiedloader_63 = ipadapterunifiedloader.load_models(
-            preset="STANDARD (medium strength)",
-            model=get_value_at_index(loraloader_68, 0),
-        )
 
         imagebatch_119 = imagebatch.batch(
             image1=get_value_at_index(loadimage_64, 0),
@@ -264,15 +237,62 @@ def main(animal, amount_of_images):
             image=get_value_at_index(imagebatch_121, 0),
         )
 
+        return ipadapter_58
+
+
+def load_input_image(animal):
+    with torch.inference_mode():
+        base_path = "/mnt/data/tbkh2025_dk/ComfyUI/Input_animals"
+        # input image
+        loadimage_50 = loadimage.load_image(
+            image=load_animal_image(base_path, animal, "original")
+        )
         imageresizekj_82 = imageresizekj.resize(
             width=1024,
-            height=1152,
+            height=1024,
             upscale_method="nearest-exact",
             keep_proportion=False,
             divisible_by=2,
             crop="center",
             image=get_value_at_index(loadimage_50, 0),
         )
+        return imageresizekj_82
+
+
+def load_Prompt(animal):
+    with torch.inference_mode():
+        cliptextencode_6 = cliptextencode.encode(
+            text=f"masterpiece, best quality, ultra-detailed, high resolution, sharp focus, pseudo-x-ray scan of a {animal} plush toy, revealing an anatomically plausible, realistic skeleton with detailed bones inside, medical imaging style, monochrome, grayscale, black and white, xray style",
+            clip=get_value_at_index(loraloader_68, 1),
+        )
+
+        cliptextencode_15 = cliptextencode.encode(
+            text=f"masterpiece, best quality, ultra-detailed, high resolution, sharp focus, pseudo-x-ray scan of a {animal} plush toy, revealing an anatomically plausible, realistic skeleton with detailed bones inside, medical imaging style, monochrome, grayscale, black and white, xray style",
+            clip=get_value_at_index(checkpointloadersimple_12, 1),
+        )
+        return cliptextencode_6, cliptextencode_15
+
+
+
+
+animals = ["Anteater","Cat","Crocodile","Dog","Dragon","Duck","Frog","Giraffe","Hedgehog","Horse","Lion","Monkey","Mouse","Penguin","Pig","Rabbit","Seal","Sheep"]
+print(animals)
+
+@click.command()
+@click.option('--animal', type=str, prompt="Which animal should be generated?", 
+              default="frog", show_default=True, 
+              help="The animal to generate (e.g., frog, cat, dog)")
+@click.option('--amount-of-images', type=int, prompt="How many images should be generated?", 
+              default=1, show_default=True, 
+              help="Number of images to generate")
+
+
+def main(animal, amount_of_images):
+    with torch.inference_mode():
+
+        cliptextencode_6, cliptextencode_15 = load_Prompt(animal)
+        ipadapter_58 = load_IPAdapter(animal)
+        imageresizekj_82 = load_input_image(animal)
 
 
         for q in range(amount_of_images):
@@ -423,8 +443,14 @@ def main(animal, amount_of_images):
 if __name__ == "__main__":
     while True:
         try:
-            main()
+            main(standalone_mode=False)
+        except KeyboardInterrupt:
+            print("Exiting on user request (Ctrl+C).")
+            break
         except Exception as e:
             print(f"Error: {e}")
             print("Retrying...")
+            continue
+        except SystemExit:
+            # Prevent click from exiting the loop after main finishes
             continue
