@@ -10,9 +10,10 @@ import torch
 from PIL import Image
 import numpy as np
 import tempfile
+import io
 
-WEB_SERVER = "http://localhost:8000"
-
+WEB_SERVER = "http://localhost:8000" 
+ 
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
     """Returns the value at the given index of a sequence or mapping.
@@ -284,10 +285,163 @@ def load_Prompt(animal):
         )
         return cliptextencode_6, cliptextencode_15
 
-
 last_type = ""
 
+def generate_image(image_bytes, animal_type, first_name, last_name, animal_name):
+    global last_type
+    with torch.inference_mode():
+        if animal_type != last_type:
+            cliptextencode_6, cliptextencode_15 = load_Prompt(animal_type)
+            ipadapter_58 = load_IPAdapter(animal_type)
+
+        imageresizekj_82 = load_input_image(image_bytes)
+
+        image_rembg_remove_background_86 = (
+            image_rembg_remove_background.image_rembg(
+                transparency=False,
+                model="u2netp",
+                post_processing=False,
+                only_mask=False,
+                alpha_matting=True,
+                alpha_matting_foreground_threshold=240,
+                alpha_matting_background_threshold=10,
+                alpha_matting_erode_size=10,
+                background_color="white",
+                images=get_value_at_index(imageresizekj_82, 0),
+            )
+        )
+
+        depthanythingpreprocessor_55 = depthanythingpreprocessor.execute(
+            ckpt_name="depth_anything_vitb14.pth",
+            resolution=1024,
+            image=get_value_at_index(image_rembg_remove_background_86, 0),
+        )
+
+        image_rembg_remove_background_96 = (
+            image_rembg_remove_background.image_rembg(
+                transparency=False,
+                model="u2net",
+                post_processing=False,
+                only_mask=False,
+                alpha_matting=True,
+                alpha_matting_foreground_threshold=240,
+                alpha_matting_background_threshold=10,
+                alpha_matting_erode_size=10,
+                background_color="black",
+                images=get_value_at_index(depthanythingpreprocessor_55, 0),
+            )
+        )
+
+        controlnetapplyadvanced_54 = controlnetapplyadvanced.apply_controlnet(
+            strength=0.9000000000000001,
+            start_percent=0,
+            end_percent=1,
+            positive=get_value_at_index(cliptextencode_6, 0),
+            negative=get_value_at_index(cliptextencode_7, 0),
+            control_net=get_value_at_index(controlnetloader_52, 0),
+            image=get_value_at_index(image_rembg_remove_background_96, 0),
+        )
+
+        ksampleradvanced_10 = ksampleradvanced.sample(
+            add_noise="enable",
+            noise_seed=random.randint(1, 2**64),
+            steps=30,
+            cfg=9.200000000000001,
+            sampler_name="euler",
+            scheduler="sgm_uniform",
+            start_at_step=0,
+            end_at_step=20,
+            return_with_leftover_noise="enable",
+            model=get_value_at_index(ipadapter_58, 0),
+            positive=get_value_at_index(controlnetapplyadvanced_54, 0),
+            negative=get_value_at_index(controlnetapplyadvanced_54, 1),
+            latent_image=get_value_at_index(emptylatentimage_5, 0),
+        )
+
+        ksampleradvanced_11 = ksampleradvanced.sample(
+            add_noise="disable",
+            noise_seed=random.randint(1, 2**64),
+            steps=30,
+            cfg=7.2,
+            sampler_name="euler",
+            scheduler="sgm_uniform",
+            start_at_step=20,
+            end_at_step=908,
+            return_with_leftover_noise="disable",
+            model=get_value_at_index(checkpointloadersimple_12, 0),
+            positive=get_value_at_index(cliptextencode_15, 0),
+            negative=get_value_at_index(cliptextencode_16, 0),
+            latent_image=get_value_at_index(ksampleradvanced_10, 0),
+        )
+
+        vaedecode_17 = vaedecode.decode(
+            samples=get_value_at_index(ksampleradvanced_11, 0),
+            vae=get_value_at_index(checkpointloadersimple_12, 2),
+        )
+
+        imagecompositemasked_112 = imagecompositemasked.composite(
+            x=0,
+            y=0,
+            resize_source=True,
+            destination=get_value_at_index(loadimage_111, 0),
+            source=get_value_at_index(vaedecode_17, 0),
+            mask=get_value_at_index(loadimage_111, 1),
+        )
+
+        def format_text_for_field(first_name, last_name, animal_name, line_length=13, lines=3):
+            import textwrap
+            text = f"{first_name} {last_name} {animal_name}"
+            wrapped = textwrap.wrap(text, width=line_length)
+            # Ensure exactly 'lines' lines (pad with empty strings if needed)
+            wrapped = wrapped[:lines] + [""] * (lines - len(wrapped))
+            return "\n".join(wrapped)
+
+
+        textonimage_115 = textonimage.apply_text(
+            text=format_text_for_field(first_name, last_name, animal_name),
+            x=853,
+            y=898,
+            font_size=16,
+            text_color="#d3c7b6",
+            text_opacity=1,
+            use_gradient=False,
+            start_color="#ff0000",
+            end_color="#0000ff",
+            angle=0,
+            stroke_width=0,
+            stroke_color="#000000",
+            stroke_opacity=1,
+            shadow_x=0,
+            shadow_y=0,
+            shadow_color="#000000",
+            shadow_opacity=1,
+            font_file="en-AllRoundItalic.ttf",
+            image=get_value_at_index(imagecompositemasked_112, 0),
+        )
+        image = get_value_at_index(textonimage_115, 0)
+        arr = image.cpu().numpy()
+
+        # Remove extra dimensions if present
+        arr = np.squeeze(arr)  # removes dimensions of size 1
+
+        # If shape is (H, W, 4) or (H, W, 3), continue. If (4, H, W), transpose.
+        if arr.ndim == 3 and arr.shape[0] in [1, 3, 4]:
+            arr = np.transpose(arr, (1, 2, 0))  # (C, H, W) -> (H, W, C)
+
+        arr = np.clip(arr * 255, 0, 255).astype(np.uint8)
+
+        img = Image.fromarray(arr)
+
+        img_buffer = io.BytesIO()
+        img.save(img_buffer, format="PNG")
+        img_buffer.seek(0)
+        return img_buffer
+
+
+
+
 def poll_job():
+    global last_type
     while True:
         try:
             response = requests.get(f"{WEB_SERVER}/job")
@@ -302,6 +456,7 @@ def poll_job():
             # Header-Metadata
             job_id = response.headers.get("img_id")
             first_name = response.headers.get("first_name")
+            # Remove last name 
             last_name = response.headers.get("last_name")
             animal_name = response.headers.get("animal_name")
             animal_type = response.headers.get("animal_type")
@@ -311,157 +466,17 @@ def poll_job():
             print(f"Job received: {job_id}")
             print(f"Patient: {first_name} {last_name}, Animal: {animal_name}, AnimalType: {animal_type}")
 
+            img_buffer = generate_image(image_bytes, animal_type, first_name, last_name, animal_name)
 
+            last_type = animal_type
+                
+            headers = {
+                "image_id": job_id,
+                "Content-Type": "image/png"
+            }
 
-
-            # Process image here 
-            with torch.inference_mode():
-                if animal_type != last_type:
-                    cliptextencode_6, cliptextencode_15 = load_Prompt(animal_type)
-                    ipadapter_58 = load_IPAdapter(animal_type)
-                imageresizekj_82 = load_input_image(image_bytes)
-
-
-                for q in range(4):
-                    image_rembg_remove_background_86 = (
-                        image_rembg_remove_background.image_rembg(
-                            transparency=False,
-                            model="u2netp",
-                            post_processing=False,
-                            only_mask=False,
-                            alpha_matting=True,
-                            alpha_matting_foreground_threshold=240,
-                            alpha_matting_background_threshold=10,
-                            alpha_matting_erode_size=10,
-                            background_color="white",
-                            images=get_value_at_index(imageresizekj_82, 0),
-                        )
-                    )
-
-                    depthanythingpreprocessor_55 = depthanythingpreprocessor.execute(
-                        ckpt_name="depth_anything_vitb14.pth",
-                        resolution=1024,
-                        image=get_value_at_index(image_rembg_remove_background_86, 0),
-                    )
-
-                    image_rembg_remove_background_96 = (
-                        image_rembg_remove_background.image_rembg(
-                            transparency=False,
-                            model="u2net",
-                            post_processing=False,
-                            only_mask=False,
-                            alpha_matting=True,
-                            alpha_matting_foreground_threshold=240,
-                            alpha_matting_background_threshold=10,
-                            alpha_matting_erode_size=10,
-                            background_color="black",
-                            images=get_value_at_index(depthanythingpreprocessor_55, 0),
-                        )
-                    )
-
-                    controlnetapplyadvanced_54 = controlnetapplyadvanced.apply_controlnet(
-                        strength=0.9000000000000001,
-                        start_percent=0,
-                        end_percent=1,
-                        positive=get_value_at_index(cliptextencode_6, 0),
-                        negative=get_value_at_index(cliptextencode_7, 0),
-                        control_net=get_value_at_index(controlnetloader_52, 0),
-                        image=get_value_at_index(image_rembg_remove_background_96, 0),
-                    )
-
-                    ksampleradvanced_10 = ksampleradvanced.sample(
-                        add_noise="enable",
-                        noise_seed=random.randint(1, 2**64),
-                        steps=30,
-                        cfg=9.200000000000001,
-                        sampler_name="euler",
-                        scheduler="sgm_uniform",
-                        start_at_step=0,
-                        end_at_step=20,
-                        return_with_leftover_noise="enable",
-                        model=get_value_at_index(ipadapter_58, 0),
-                        positive=get_value_at_index(controlnetapplyadvanced_54, 0),
-                        negative=get_value_at_index(controlnetapplyadvanced_54, 1),
-                        latent_image=get_value_at_index(emptylatentimage_5, 0),
-                    )
-
-                    ksampleradvanced_11 = ksampleradvanced.sample(
-                        add_noise="disable",
-                        noise_seed=random.randint(1, 2**64),
-                        steps=30,
-                        cfg=7.2,
-                        sampler_name="euler",
-                        scheduler="sgm_uniform",
-                        start_at_step=20,
-                        end_at_step=908,
-                        return_with_leftover_noise="disable",
-                        model=get_value_at_index(checkpointloadersimple_12, 0),
-                        positive=get_value_at_index(cliptextencode_15, 0),
-                        negative=get_value_at_index(cliptextencode_16, 0),
-                        latent_image=get_value_at_index(ksampleradvanced_10, 0),
-                    )
-
-                    vaedecode_17 = vaedecode.decode(
-                        samples=get_value_at_index(ksampleradvanced_11, 0),
-                        vae=get_value_at_index(checkpointloadersimple_12, 2),
-                    )
-
-                    imagecompositemasked_112 = imagecompositemasked.composite(
-                        x=0,
-                        y=0,
-                        resize_source=True,
-                        destination=get_value_at_index(loadimage_111, 0),
-                        source=get_value_at_index(vaedecode_17, 0),
-                        mask=get_value_at_index(loadimage_111, 1),
-                    )
-
-                    textonimage_115 = textonimage.apply_text(
-                        text=f"{first_name}\n{last_name}\n{animal_name}",
-                        x=853,
-                        y=898,
-                        font_size=16,
-                        text_color="#d3c7b6",
-                        text_opacity=1,
-                        use_gradient=False,
-                        start_color="#ff0000",
-                        end_color="#0000ff",
-                        angle=0,
-                        stroke_width=0,
-                        stroke_color="#000000",
-                        stroke_opacity=1,
-                        shadow_x=0,
-                        shadow_y=0,
-                        shadow_color="#000000",
-                        shadow_opacity=1,
-                        font_file="en-AllRoundItalic.ttf",
-                        image=get_value_at_index(imagecompositemasked_112, 0),
-                    )
-                    image = get_value_at_index(textonimage_115, 0)
-                    arr = image.cpu().numpy()
-
-                    # Remove extra dimensions if present
-                    arr = np.squeeze(arr)  # removes dimensions of size 1
-
-                    # If shape is (H, W, 4) or (H, W, 3), continue. If (4, H, W), transpose.
-                    if arr.ndim == 3 and arr.shape[0] in [1, 3, 4]:
-                        arr = np.transpose(arr, (1, 2, 0))  # (C, H, W) -> (H, W, C)
-
-                    arr = np.clip(arr * 255, 0, 255).astype(np.uint8)
-
-                    img = Image.fromarray(arr)
-
-                    print("Image processed.")
-
-                    # send result
-                    files = {
-                        "result": ("result.png", BytesIO(image_bytes), "image/png")
-                    }
-                    headers = {
-                        "image_id": job_id
-                    }
-
-                    res = requests.post(f"{WEB_SERVER}/job", files=files, headers=headers)
-                    print("Result sent:", res.status_code, res.text)
+            res = requests.post(f"{WEB_SERVER}/job", data=img_buffer.getvalue(), headers=headers)
+            print("Result sent:", res.status_code, res.text)
             last_type = animal_type
 
         except Exception as e:
@@ -472,37 +487,3 @@ def poll_job():
 
 if __name__ == "__main__":
     poll_job()
-
-
-
-"""
-def poll_job():
-    while True:
-        try:
-            response = requests.get(f"{WEB_SERVER}/job")
-            if response.status_code == 204:
-                print("No job recieved...")
-                time.sleep(2)
-                continue
-
-            job = response.json()
-            job_id = job["job_id"]
-            print(f"Job recieved: {job_id}")
-            print(f"Job details: {job["text"]}")
-            print(f"bone broken: {job["bone_broken"]}")
-
-            # Processing (for demo: sleeping)
-            time.sleep(5)
-            print("picture processed")
-
-            # Return result image (for demo: same picture)
-            result = {
-                "result_image_base64": job["image_base64"]
-            }
-            res = requests.post(f"{WEB_SERVER}/job/{job_id}/result", json=result)
-            print("Result sent:", res.status_code)
-
-        except Exception as e:
-            print("Error:", e)
-            time.sleep(3)
-"""

@@ -12,4 +12,4 @@ Here is how it works:
 - Then, using **Stable Diffusion**, an AI image generation model, the photo is transformed into a creative "X-ray image" of the bear.
 - The result is shown on a screen and will be available for download through a QR code.
 
-It's just for fun and a great way to introduce children to both medicine and technology in a creative, friendly way.
+It's just for fun and a great way to introduce children to both medicine and technology in a creative, friendly way. 
