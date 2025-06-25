@@ -11,7 +11,7 @@ from PIL import Image
 import numpy as np
 import tempfile
 import io
-import requests
+
 
 WEB_SERVER = "http://localhost:8001" 
  
@@ -180,7 +180,7 @@ with torch.inference_mode():
     controlnetloader_52 = controlnetloader.load_controlnet(
         control_net_name="SDXL/controlnet-union-sdxl-1.0/diffusion_pytorch_model_promax.safetensors"
     )
-    ## Watermark images
+    ## Watermark image
     loadimage_111 = loadimage.load_image(image="pasted/image.png")
 
     ipadapterunifiedloader_63 = ipadapterunifiedloader.load_models(
