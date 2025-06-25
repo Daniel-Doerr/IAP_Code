@@ -11,8 +11,9 @@ from PIL import Image
 import numpy as np
 import tempfile
 import io
+import requests
 
-WEB_SERVER = "http://localhost:8000" 
+WEB_SERVER = "http://localhost:8001" 
  
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
@@ -285,14 +286,11 @@ def load_Prompt(animal):
         )
         return cliptextencode_6, cliptextencode_15
 
-last_type = ""
 
 def generate_image(image_bytes, animal_type, first_name, last_name, animal_name):
-    global last_type
     with torch.inference_mode():
-        if animal_type != last_type:
-            cliptextencode_6, cliptextencode_15 = load_Prompt(animal_type)
-            ipadapter_58 = load_IPAdapter(animal_type)
+        cliptextencode_6, cliptextencode_15 = load_Prompt(animal_type)
+        ipadapter_58 = load_IPAdapter(animal_type)
 
         imageresizekj_82 = load_input_image(image_bytes)
 
@@ -438,13 +436,29 @@ def generate_image(image_bytes, animal_type, first_name, last_name, animal_name)
         return img_buffer
 
 
+def get_access_token(password: str) -> str:
+    """Authenticate with the backend and get a JWT access token."""
+    url = f"{WEB_SERVER}/token"
+    data = {"password": password}
+    response = requests.post(url, data=data)
+    response.raise_for_status()
+    return response.json()["access_token"]
 
 
 def poll_job():
-    global last_type
+    password = "Password"
+    token = get_access_token(password)
+    headers = {"Authorization": f"Bearer {token}"}
+
     while True:
         try:
-            response = requests.get(f"{WEB_SERVER}/job")
+            response = requests.get(f"{WEB_SERVER}/job", headers=headers)
+            if response.status_code == 401:
+                print("Unauthorized, refreshing token...")
+                token = get_access_token(password)
+                headers["Authorization"] = f"Bearer {token}"
+                time.sleep(2)
+                continue
             if response.status_code == 204:
                 print("No job received...")
                 time.sleep(2)
@@ -456,28 +470,35 @@ def poll_job():
             # Header-Metadata
             job_id = response.headers.get("img_id")
             first_name = response.headers.get("first_name")
-            # Remove last name 
             last_name = response.headers.get("last_name")
             animal_name = response.headers.get("animal_name")
             animal_type = response.headers.get("animal_type")
-            ## not jet implemented
             bone_broken = response.headers.get("bone_broken")
+
+            if not job_id or not image_bytes:
+                print("No valid job data received, skipping...")
+                time.sleep(2)
+                continue
+
+            if animal_type is None:
+                animal_type = "bear"
 
             print(f"Job received: {job_id}")
             print(f"Patient: {first_name} {last_name}, Animal: {animal_name}, AnimalType: {animal_type}")
 
-            img_buffer = generate_image(image_bytes, animal_type, first_name, last_name, animal_name)
+            for i in range(3):
+                img_buffer = generate_image(image_bytes, animal_type, first_name, last_name, animal_name)
 
-            last_type = animal_type
-                
-            headers = {
-                "image_id": job_id,
-                "Content-Type": "image/png"
-            }
+                files = {
+                    "result": ("result.png", img_buffer.getvalue(), "image/png"),
+                }
+                data = {
+                    "image_id": job_id,
+                }
 
-            res = requests.post(f"{WEB_SERVER}/job", data=img_buffer.getvalue(), headers=headers)
-            print("Result sent:", res.status_code, res.text)
-            last_type = animal_type
+                res = requests.post(f"{WEB_SERVER}/job", headers={"Authorization": f"Bearer {token}"}, files=files, data=data)
+                print("Result sent:", res.status_code, res.text)
+
 
         except Exception as e:
             print("Error:", e)
