@@ -265,8 +265,7 @@ class ImageGenerationPipeline:
                 vaedecode = NODE_CLASS_MAPPINGS["VAEDecode"]()
                 imagecompositemasked = NODE_CLASS_MAPPINGS["ImageCompositeMasked"]()
                 textonimage = NODE_CLASS_MAPPINGS["TextOnImage"]()
-                easy_showanything = NODE_CLASS_MAPPINGS["easy showAnything"]()
-                saveimage = NODE_CLASS_MAPPINGS["SaveImage"]()
+
 
                 for q in range(1):
                     ipadaptercombineembeds_138 = ipadaptercombineembeds.batch(
