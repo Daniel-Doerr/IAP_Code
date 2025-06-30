@@ -1,17 +1,11 @@
-# config
-import requests
-import base64
-import time
-import BytesIO
 import os
 import random
 import sys
 from typing import Sequence, Mapping, Any, Union
 import torch
-from PIL import Image
-import numpy as np
-import tempfile
 import io
+import numpy as np
+
 
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
@@ -36,6 +30,7 @@ def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
         return obj[index]
     except KeyError:
         return obj["result"][index]
+
 
 def find_path(name: str, path: str = None) -> str:
     """
@@ -96,6 +91,7 @@ def add_extra_model_paths() -> None:
 add_comfyui_directory_to_sys_path()
 add_extra_model_paths()
 
+
 def import_custom_nodes() -> None:
     """Find all custom nodes in the custom_nodes folder and add those node objects to NODE_CLASS_MAPPINGS
 
@@ -118,77 +114,82 @@ def import_custom_nodes() -> None:
     # Initializing custom nodes
     init_extra_nodes()
 
+
 from nodes import NODE_CLASS_MAPPINGS
+
+
 
 import_custom_nodes()
 with torch.inference_mode():
-    checkpointloadersimple = NODE_CLASS_MAPPINGS["CheckpointLoaderSimple"]()
-    checkpointloadersimple_4 = checkpointloadersimple.load_checkpoint(
-        ckpt_name="sd_xl_base_1.0.safetensors"
+    loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
+
+    vaeloader = NODE_CLASS_MAPPINGS["VAELoader"]()
+    vaeloader_32 = vaeloader.load_vae(
+        vae_name="diffusion_pytorch_model.safetensors"
     )
 
-    emptylatentimage = NODE_CLASS_MAPPINGS["EmptyLatentImage"]()
-    emptylatentimage_5 = emptylatentimage.generate(
-        width=1024, height=1024, batch_size=1
+    checkpointloadersimple = NODE_CLASS_MAPPINGS["CheckpointLoaderSimple"]()
+    checkpointloadersimple_38 = checkpointloadersimple.load_checkpoint(
+        ckpt_name="flux1-kontext-dev.safetensors"
     )
 
     janusmodelloader = NODE_CLASS_MAPPINGS["JanusModelLoader"]()
-    janusmodelloader_130 = janusmodelloader.load_model(
+    janusmodelloader_51 = janusmodelloader.load_model(
         model_name="deepseek-ai/Janus-Pro-1B"
     )
 
-    loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
+    imageresizekj = NODE_CLASS_MAPPINGS["ImageResizeKJ"]()
 
     janusimageunderstanding = NODE_CLASS_MAPPINGS["JanusImageUnderstanding"]()
 
 
-    loraloader = NODE_CLASS_MAPPINGS["LoraLoader"]()
-    loraloader_68 = loraloader.load_lora(
-        lora_name="xraylorasdxl.safetensors",
-        strength_model=1.0000000000000002,
-        strength_clip=1,
-        model=get_value_at_index(checkpointloadersimple_4, 0),
-        clip=get_value_at_index(checkpointloadersimple_4, 1),
+    text_multiline = NODE_CLASS_MAPPINGS["Text Multiline"]()
+    text_multiline_56 = text_multiline.text_multiline(
+        text="\nGenerate the ainimal depicted in a clean, clinical X-ray scan style. The internal bone structure is detailed and anatomically plausible, resembling simplified mammalian bones, including a visible spine with vertebrae, ribcage, arms, legs, joints, pelvis, and digits — all proportioned to the animals plush body. The bones are semi-transparent and softly glowing in white and pale blue, rendered with subtle radiographic shadows. The background is dark and neutral to mimic a real X-ray scan. The style is medical, technical, and illustrative — no horror elements, no visible skull, no face or eyes, no soft tissue, no fur, no fabric seams. The overall mood is scientific and clean, not emotional or creepy. High-resolution, radiographic rendering, suitable for veterinary illustration or educational imaging."
+    )
+
+    stringconcatenate = NODE_CLASS_MAPPINGS["StringConcatenate"]()
+
+
+    dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
+    dualcliploader_45 = dualcliploader.load_clip(
+        clip_name1="clip_l.safetensors",
+        clip_name2="t5/t5xxl_fp16.safetensors",
+        type="flux",
+        device="default",
     )
 
     cliptextencode = NODE_CLASS_MAPPINGS["CLIPTextEncode"]()
 
 
-    cliptextencode_7 = cliptextencode.encode(
-        text="low quality, blurry, noisy, text, watermark, cartoon, drawing, sketch, painting, anime, 3D render, plush toy, fabric, stuffing, colorful, toy bones, plastic bones, cartoon bones, unrealistic skeleton, bad anatomy, deformed, mutated, extra limbs, fused bones, skin, fur, organs, clutter, multiple animals",
-        clip=get_value_at_index(loraloader_68, 1),
-    )
-
-    checkpointloadersimple_12 = checkpointloadersimple.load_checkpoint(
-        ckpt_name="SDXL/sd_xl_refiner_1.0.safetensors"
-    )
-
-
-    cliptextencode_16 = cliptextencode.encode(
-        text="low quality, blurry, noisy, text, watermark, cartoon, drawing, sketch, painting, anime, 3D render, plush toy, fabric, stuffing, colorful, toy bones, plastic bones, cartoon bones, unrealistic skeleton, bad anatomy, deformed, mutated, extra limbs, fused bones, skin, fur, organs, clutter, multiple animals",
-        clip=get_value_at_index(checkpointloadersimple_12, 1),
-    )
-
     controlnetloader = NODE_CLASS_MAPPINGS["ControlNetLoader"]()
-    controlnetloader_52 = controlnetloader.load_controlnet(
-        control_net_name="SDXL/controlnet-union-sdxl-1.0/diffusion_pytorch_model_promax.safetensors"
+    controlnetloader_47 = controlnetloader.load_controlnet(
+        control_net_name="FLUX.1/Shakker-Labs-ControlNet-Union-Pro/diffusion_pytorch_model.safetensors"
     )
 
-    ipadapterencoder = NODE_CLASS_MAPPINGS["IPAdapterEncoder"]()
-    ipadapterunifiedloader = NODE_CLASS_MAPPINGS["IPAdapterUnifiedLoader"]()
-    ipadapterunifiedloader_63 = ipadapterunifiedloader.load_models(
-        preset="PLUS (high strength)", model=get_value_at_index(loraloader_68, 0)
+    image_rembg_remove_background = NODE_CLASS_MAPPINGS["Image Rembg (Remove Background)"]()
+
+    vaeencode = NODE_CLASS_MAPPINGS["VAEEncode"]()
+
+    loadimage_58 = loadimage.load_image(image="pasted/image.png")
+
+    cliptextencode_66 = cliptextencode.encode(
+        text="low quality, blurry, out of focus, noisy, distorted anatomy, deformed limbs, missing bones, broken joints, horror elements, scary, creepy, disturbing, grotesque, blood, gore, flesh, skin texture, visible eyes, open mouth, facial expression, exposed skull, colorful background, vivid colors, fantasy style, surreal, painterly, cartoon, anime, watercolor, oil painting, overexposed, underexposed, strong shadows, photo artifacts, grain, chromatic aberration, double exposure, body horror, glowing eyes, nightmare style, unsettling, low resolution, soft rendering, plastic texture, shiny surface, incorrect perspective, unrealistic proportions, extra limbs, anatomical errors, fantasy bones, melted shapes, glitch effects, artistic filter, cinematic lighting, emotional tone",
+        clip=get_value_at_index(dualcliploader_45, 0),
     )
 
-    ipadaptercombineembeds = NODE_CLASS_MAPPINGS["IPAdapterCombineEmbeds"]()
-    ipadapterembeds = NODE_CLASS_MAPPINGS["IPAdapterEmbeds"]()
-    imageresizekj = NODE_CLASS_MAPPINGS["ImageResizeKJ"]()
-    image_rembg_remove_background = NODE_CLASS_MAPPINGS[
-        "Image Rembg (Remove Background)"
-    ]()
     depthanythingpreprocessor = NODE_CLASS_MAPPINGS["DepthAnythingPreprocessor"]()
     controlnetapplyadvanced = NODE_CLASS_MAPPINGS["ControlNetApplyAdvanced"]()
-    ksampleradvanced = NODE_CLASS_MAPPINGS["KSamplerAdvanced"]()
+    fluxguidance = NODE_CLASS_MAPPINGS["FluxGuidance"]()
+    ksampler = NODE_CLASS_MAPPINGS["KSampler"]()
     vaedecode = NODE_CLASS_MAPPINGS["VAEDecode"]()
     imagecompositemasked = NODE_CLASS_MAPPINGS["ImageCompositeMasked"]()
     textonimage = NODE_CLASS_MAPPINGS["TextOnImage"]()
+    saveimage = NODE_CLASS_MAPPINGS["SaveImage"]()
+
+
+
+
+
+
+

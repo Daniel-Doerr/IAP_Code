@@ -3,6 +3,46 @@ import random
 import sys
 from typing import Sequence, Mapping, Any, Union
 import torch
+####################################################
+import io
+import numpy as np
+import tempfile
+from PIL import Image
+
+####################################################
+
+def returnImage(generatedImage: Any) -> io.BytesIO:
+    image = get_value_at_index(generatedImage, 0)
+    arr = image.cpu().numpy()
+
+    # Remove extra dimensions if present
+    arr = np.squeeze(arr)  # removes dimensions of size 1
+
+    # If shape is (H, W, 4) or (H, W, 3), continue. If (4, H, W), transpose.
+    if arr.ndim == 3 and arr.shape[0] in [1, 3, 4]:
+        arr = np.transpose(arr, (1, 2, 0))  # (C, H, W) -> (H, W, C)
+
+    arr = np.clip(arr * 255, 0, 255).astype(np.uint8)
+
+    img = Image.fromarray(arr)
+
+    img_buffer = io.BytesIO()
+    img.save(img_buffer, format="PNG")
+    img_buffer.seek(0)
+    return img_buffer
+
+
+def format_text_for_field(first_name, last_name, animal_name, line_length=13, lines=3):
+    import textwrap
+    text = f"{first_name} {last_name} {animal_name}"
+    wrapped = textwrap.wrap(text, width=line_length)
+    # Ensure exactly 'lines' lines (pad with empty strings if needed)
+    wrapped = wrapped[:lines] + [""] * (lines - len(wrapped))
+    return "\n".join(wrapped)
+
+####################################################
+
+
 
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
@@ -115,11 +155,18 @@ def import_custom_nodes() -> None:
 from nodes import NODE_CLASS_MAPPINGS
 
 
-def main():
+# def main():
+def generateImage(image_bytes: bytes, animal_type: str, first_name: str, last_name: str, animal_name: str) -> io.BytesIO:
     import_custom_nodes()
     with torch.inference_mode():
         loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
-        loadimage_17 = loadimage.load_image(image="IMG-20250422-WA0003.jpg")
+        #loadimage_17 = loadimage.load_image(image="IMG-20250422-WA0003.jpg")
+        ##
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
+            tmp.write(image_bytes)
+            tmp_path = tmp.name
+        loadimage_17 = loadimage.load_image(image=tmp_path)
+        ##
 
         vaeloader = NODE_CLASS_MAPPINGS["VAELoader"]()
         vaeloader_32 = vaeloader.load_vae(
@@ -284,7 +331,7 @@ def main():
             )
 
             textonimage_59 = textonimage.apply_text(
-                text="TBKH2025\nFLUX Kontext\nTest\n",
+                text=format_text_for_field(first_name, last_name, animal_name), ####### Custom Text #######
                 x=853,
                 y=898,
                 font_size=16,
@@ -305,10 +352,15 @@ def main():
                 image=get_value_at_index(imagecompositemasked_57, 0),
             )
 
-            saveimage_9 = saveimage.save_images(
-                filename_prefix="ComfyUI", images=get_value_at_index(textonimage_59, 0)
-            )
+            #saveimage_9 = saveimage.save_images(
+            #    filename_prefix="ComfyUI", images=get_value_at_index(textonimage_59, 0)
+            #)
+            return returnImage(textonimage_59)
 
 
-if __name__ == "__main__":
-    main()
+
+
+
+
+#if __name__ == "__main__":
+    #main()
