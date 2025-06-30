@@ -4,6 +4,7 @@ import time
 
 from NEW_FLUX_Kontext import generateImage
 
+WEB_SERVER = "http://localhost:8001" 
 
 
 def get_access_token(password: str) -> str:
