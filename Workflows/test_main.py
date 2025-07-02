@@ -2,14 +2,20 @@ import requests
 import time
 import os
 
-
-from workflow import generateImage
+from multi_config import load_config_based_on_workflow
+from multi_workflow import load_workflow
 
 WEB_SERVER = "http://localhost:8001" 
 
 
 
 def poll_job():
+    # Choose the workflow to use 
+    # TODO: make this in cooperation with the frontend 
+    workflow = "AIprompt_FLUX_Kontext"
+    
+    workflow_obj = load_workflow(workflow)
+
     index = 0
     while True:
         ## Pfad auf Richtigkeit prüfen
@@ -29,7 +35,7 @@ def poll_job():
         print(f"Patient: {first_name} {last_name}, Animal: {animal_name}, AnimalType: {animal_type}")
 
         for i in range(1):
-            img_buffer = generateImage(image_bytes, animal_type, first_name, last_name, animal_name)
+            img_buffer = workflow_obj.generate(workflow, image_bytes, animal_type, first_name, last_name, animal_name)
 
             # Save the output image as a PNG in a directory
             output_dir = "output_images"
