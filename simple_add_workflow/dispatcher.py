@@ -4,6 +4,7 @@ from important_functions import Functions
 
 # import the workflow class you want to add
 from FLUX_Kontext import FLUX_Kontext
+from IP_Adapter_SDXL import IP_Adapter_SDXL
 
 
 class WorkflowDispatcher:
@@ -17,7 +18,7 @@ class WorkflowDispatcher:
         # Map workflow names to their corresponding classes
         self.workflow_class = {
             "FLUX_Kontext": FLUX_Kontext, 
-
+            "IP_Adapter_SDXL": IP_Adapter_SDXL
             # example 
             # "name_of_your_workflow": YourWorkflowClassName,
         }
