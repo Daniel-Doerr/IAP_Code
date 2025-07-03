@@ -3,18 +3,17 @@ import time
 import os
 import click
 
-from multi_config import load_config_based_on_workflow
-from multi_workflow import load_workflow
+from dispatcher import WorkflowDispatcher
 
 WEB_SERVER = "http://localhost:8001" 
 
 
 
 def poll_job(workflow):
-    # Use the workflow selected by the user
 
     start_time = time.time()
-    workflow_obj = load_workflow(workflow)
+    dispatcher = WorkflowDispatcher()
+    workflow_obj = dispatcher.create_workflow(workflow)
     elapsed_time = time.time() - start_time
     print(f"Workflow loaded in {elapsed_time:.2f} seconds")
 
@@ -37,7 +36,7 @@ def poll_job(workflow):
         print(f"Patient: {first_name} {last_name}, Animal: {animal_name}, AnimalType: {animal_type}")
 
         for i in range(1):
-
+            
             start_time = time.time()
             img_buffer = workflow_obj.generate(workflow, image_bytes, animal_type, first_name, last_name, animal_name)
             elapsed_time = time.time() - start_time
@@ -57,7 +56,8 @@ def poll_job(workflow):
 @click.command()
 @click.option(
     '--workflow',
-    type=click.Choice(['IP_Adapter_SDXL', 'AIprompt_FLUX_Kontext'], case_sensitive=False),
+    # Add your workflow name into the list below
+    type=click.Choice(['IP_Adapter_SDXL', 'FLUX_Kontext'], case_sensitive=False),
     prompt='Please choose a workflow',
     help='The workflow to use for image generation'
 )

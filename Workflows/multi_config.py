@@ -7,8 +7,9 @@ import io
 import numpy as np
 
 class load_config_based_on_workflow:  # only for NODE_CLASS_MAPPINGS and models
-    @staticmethod
-    def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
+    
+    # functions needed for loading the ComfyUI environment and custom nodes
+    def get_value_at_index(self, obj: Union[Sequence, Mapping], index: int) -> Any:
         """Returns the value at the given index of a sequence or mapping.
 
         If the object is a sequence (like list or string), returns the value at the given index.
@@ -114,8 +115,12 @@ class load_config_based_on_workflow:  # only for NODE_CLASS_MAPPINGS and models
 
         # Initializing custom nodes
         init_extra_nodes()
+    # end of functions needed for loading the ComfyUI environment and custom nodes 
 
+
+    # This is the constructor of the class, which will be called when an instance of the class is created (in multi_workflow.py)
     def __init__(self):
+        # This will set up the environment for ComfyUI
         self.add_comfyui_directory_to_sys_path()
         self.add_extra_model_paths()
         try:
@@ -125,23 +130,30 @@ class load_config_based_on_workflow:  # only for NODE_CLASS_MAPPINGS and models
             print("Could not import NODE_CLASS_MAPPINGS from nodes.")
             self.NODE_CLASS_MAPPINGS = {}
         self.import_custom_nodes()
+
+        # If you add a new workflow, you need to add the name and the name of the function here
         self.befehle = {
             "AIprompt_FLUX_Kontext": self.AIprompt_FLUX_Kontext,
             "IP_Adapter_SDXL": self.IP_Adapter_SDXL,
+            # "The name on which you want to call the workflow": self.name_of_the_function,
         }
 
-    def load_config(self, befehl: str):
-        funktion = self.befehle.get(befehl)
+
+    # by calling load_config(workflow_name), you can load the config for the desired workflow
+    def load_config(self, workflow_name: str):
+        funktion = self.befehle.get(workflow_name)
         if funktion:
             return funktion()
         else:
-            print(f"Unbekannter Befehl: {befehl}")
+            print(f"Unbekannter Befehl: {workflow_name}")
             return None
 
     def AIprompt_FLUX_Kontext(self):
         NODE_CLASS_MAPPINGS = self.NODE_CLASS_MAPPINGS
         get_value_at_index = self.get_value_at_index
         with torch.inference_mode():
+            print("AIprompt_FLUX_Kontext workflow started")
+
             loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
             vaeloader = NODE_CLASS_MAPPINGS["VAELoader"]()
             checkpointloadersimple = NODE_CLASS_MAPPINGS["CheckpointLoaderSimple"]()
@@ -207,6 +219,103 @@ class load_config_based_on_workflow:  # only for NODE_CLASS_MAPPINGS and models
 
 
     def IP_Adapter_SDXL(self):
-        # IP_Adapter_SDXL is not implemented yet, return empty dict
-        print("IP_Adapter_SDXL is not implemented yet.")
-        return {}
+        NODE_CLASS_MAPPINGS = self.NODE_CLASS_MAPPINGS
+        get_value_at_index = self.get_value_at_index
+        with torch.inference_mode():
+            print("IP_Adapter_SDXL workflow started")
+            # put your workflow models here
+            # search for "NODE_CLASS_MAPPINGS" in the comfyui script and put all of them here 
+            # then put all variables befor the for loop here, which have nothing to do with the input image (somthing like a watermark or a text can be put here)
+            # TIPS: Coppy all variables befor the for loop 
+            # then cut the ones which use "loadimage_XX" (XX = some number) 
+            # and then cut all variables which are unknown marked 
+            # all cut variables will be put back befor the for loop 
+
+            checkpointloadersimple = NODE_CLASS_MAPPINGS["CheckpointLoaderSimple"]()
+            emptylatentimage = NODE_CLASS_MAPPINGS["EmptyLatentImage"]()
+            janusmodelloader = NODE_CLASS_MAPPINGS["JanusModelLoader"]()
+            loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
+            janusimageunderstanding = NODE_CLASS_MAPPINGS["JanusImageUnderstanding"]()
+            loraloader = NODE_CLASS_MAPPINGS["LoraLoader"]()
+            cliptextencode = NODE_CLASS_MAPPINGS["CLIPTextEncode"]()
+            controlnetloader = NODE_CLASS_MAPPINGS["ControlNetLoader"]()
+            ipadapterunifiedloader = NODE_CLASS_MAPPINGS["IPAdapterUnifiedLoader"]()
+            ipadapterencoder = NODE_CLASS_MAPPINGS["IPAdapterEncoder"]()
+            ipadaptercombineembeds = NODE_CLASS_MAPPINGS["IPAdapterCombineEmbeds"]()
+            ipadapterembeds = NODE_CLASS_MAPPINGS["IPAdapterEmbeds"]()
+            imageresizekj = NODE_CLASS_MAPPINGS["ImageResizeKJ"]()
+            image_rembg_remove_background = NODE_CLASS_MAPPINGS["Image Rembg (Remove Background)"]()
+            depthanythingpreprocessor = NODE_CLASS_MAPPINGS["DepthAnythingPreprocessor"]()
+            controlnetapplyadvanced = NODE_CLASS_MAPPINGS["ControlNetApplyAdvanced"]()
+            ksampleradvanced = NODE_CLASS_MAPPINGS["KSamplerAdvanced"]()
+            vaedecode = NODE_CLASS_MAPPINGS["VAEDecode"]()
+            imagecompositemasked = NODE_CLASS_MAPPINGS["ImageCompositeMasked"]()
+            textonimage = NODE_CLASS_MAPPINGS["TextOnImage"]()
+            easy_showanything = NODE_CLASS_MAPPINGS["easy showAnything"]()
+            saveimage = NODE_CLASS_MAPPINGS["SaveImage"]()
+
+            checkpointloadersimple_4 = checkpointloadersimple.load_checkpoint(
+                ckpt_name="sd_xl_base_1.0.safetensors"
+            )
+
+            emptylatentimage_5 = emptylatentimage.generate(
+                width=1024, height=1024, batch_size=1
+            )
+
+            janusmodelloader_130 = janusmodelloader.load_model(
+                model_name="deepseek-ai/Janus-Pro-1B"
+            )
+
+            loraloader_68 = loraloader.load_lora(
+                lora_name="xraylorasdxl.safetensors",
+                strength_model=1.0000000000000002,
+                strength_clip=1,
+                model=get_value_at_index(checkpointloadersimple_4, 0),
+                clip=get_value_at_index(checkpointloadersimple_4, 1),
+            )
+
+            cliptextencode_7 = cliptextencode.encode(
+                text="worst quality, low quality, blurry, noisy, text, signature, watermark, UI, cartoon, drawing, illustration, sketch, painting, anime, 3D render, (photorealistic plush toy), (visible fabric texture), (visible stuffing), colorful, vibrant colors, toy bones, plastic bones, cartoon bones, unrealistic skeleton, bad anatomy, deformed skeleton, disfigured, mutated limbs, extra limbs, fused bones, skin, fur, organs, background clutter, multiple animals",
+                clip=get_value_at_index(loraloader_68, 1),
+            )
+
+            checkpointloadersimple_12 = checkpointloadersimple.load_checkpoint(
+                ckpt_name="SDXL/sd_xl_refiner_1.0.safetensors"
+            )
+
+            cliptextencode_16 = cliptextencode.encode(
+                text="worst quality, low quality, blurry, noisy, text, signature, watermark, UI, cartoon, drawing, illustration, sketch, painting, anime, 3D render, (photorealistic plush toy), (visible fabric texture), (visible stuffing), colorful, vibrant colors, toy bones, plastic bones, cartoon bones, unrealistic skeleton, bad anatomy, deformed skeleton, disfigured, mutated limbs, extra limbs, fused bones, skin, fur, organs, background clutter, multiple animals",
+                clip=get_value_at_index(checkpointloadersimple_12, 1),
+            )
+
+            controlnetloader_52 = controlnetloader.load_controlnet(
+                control_net_name="SDXL/controlnet-union-sdxl-1.0/diffusion_pytorch_model_promax.safetensors"
+            )
+
+            ipadapterunifiedloader_63 = ipadapterunifiedloader.load_models(
+                preset="PLUS (high strength)", model=get_value_at_index(loraloader_68, 0)
+            )
+
+        # will return all local variables except 'self'
+        return {k: v for k, v in locals().items() if k != "self"}
+    
+
+
+"""
+    def Workflow_name(self):
+        NODE_CLASS_MAPPINGS = self.NODE_CLASS_MAPPINGS
+        get_value_at_index = self.get_value_at_index
+        with torch.inference_mode():
+            print("Workflow_name started")
+            # put your workflow models here
+            # search for "NODE_CLASS_MAPPINGS" in the comfyui script and put all of them here 
+            # then put all variables befor the for loop here, which have nothing to do with the input image (somthing like a watermark or a text can be put here)
+            # TIPS: Coppy all variables befor the for loop 
+            # then cut the ones which use "loadimage_XX" (XX = some number) 
+            # and then cut all variables which are unknown marked 
+            # all cut variables will be put back befor the for loop 
+
+
+        # will return all local variables except 'self'
+        return {k: v for k, v in locals().items() if k != "self"}
+"""
