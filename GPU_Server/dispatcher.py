@@ -1,6 +1,12 @@
 import os
 import sys
 
+# Add the parent directory to sys.path to handle relative imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
 # import the workflow class you want to add
 from workflow_scripts.FLUX_Kontext import FLUX_Kontext
 from workflow_scripts.IP_Adapter_SDXL import IP_Adapter_SDXL
