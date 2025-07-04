@@ -1,0 +1,1629 @@
+{
+  "id": "138c10f0-e038-4862-b881-94b7579e3628",
+  "revision": 0,
+  "last_node_id": 66,
+  "last_link_id": 126,
+  "nodes": [
+    {
+      "id": 36,
+      "type": "DepthAnythingPreprocessor",
+      "pos": [
+        541.8408813476562,
+        -417.14794921875
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 120
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            72,
+            99
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui_controlnet_aux",
+        "ver": "1.0.7",
+        "Node name for S&R": "DepthAnythingPreprocessor"
+      },
+      "widgets_values": [
+        "depth_anything_vitl14.pth",
+        1024
+      ]
+    },
+    {
+      "id": 47,
+      "type": "ControlNetLoader",
+      "pos": [
+        540.6242065429688,
+        -519.247314453125
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CONTROL_NET",
+          "type": "CONTROL_NET",
+          "links": [
+            88
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "ControlNetLoader"
+      },
+      "widgets_values": [
+        "FLUX.1/Shakker-Labs-ControlNet-Union-Pro/diffusion_pytorch_model.safetensors"
+      ]
+    },
+    {
+      "id": 19,
+      "type": "PreviewImage",
+      "pos": [
+        262.4399719238281,
+        -526.4794311523438
+      ],
+      "size": [
+        210,
+        258
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 72
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 38,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+        1294.996337890625,
+        -766.1735229492188
+      ],
+      "size": [
+        270,
+        122
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            77
+          ]
+        },
+        {
+          "label": "CLIP",
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": null
+        },
+        {
+          "label": "VAE",
+          "name": "VAE",
+          "type": "VAE",
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "CheckpointLoaderSimple"
+      },
+      "widgets_values": [
+        "flux1-kontext-dev.safetensors"
+      ]
+    },
+    {
+      "id": 42,
+      "type": "FluxGuidance",
+      "pos": [
+        1226.867431640625,
+        -391.4612731933594
+      ],
+      "size": [
+        317.4000244140625,
+        58
+      ],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "conditioning",
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 83
+        }
+      ],
+      "outputs": [
+        {
+          "label": "CONDITIONING",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [
+            98
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "FluxGuidance"
+      },
+      "widgets_values": [
+        1
+      ]
+    },
+    {
+      "id": 57,
+      "type": "ImageCompositeMasked",
+      "pos": [
+        2271.4560546875,
+        -434.84454345703125
+      ],
+      "size": [
+        315,
+        146
+      ],
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "destination",
+          "type": "IMAGE",
+          "link": 109
+        },
+        {
+          "name": "source",
+          "type": "IMAGE",
+          "link": 112
+        },
+        {
+          "name": "mask",
+          "shape": 7,
+          "type": "MASK",
+          "link": 110
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            111
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.31",
+        "Node name for S&R": "ImageCompositeMasked"
+      },
+      "widgets_values": [
+        0,
+        0,
+        true
+      ]
+    },
+    {
+      "id": 58,
+      "type": "LoadImage",
+      "pos": [
+        2283.15283203125,
+        -220.27845764160156
+      ],
+      "size": [
+        274,
+        314
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            109
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            110
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.31",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "pasted/image.png",
+        "image"
+      ]
+    },
+    {
+      "id": 54,
+      "type": "StringConcatenate",
+      "pos": [
+        296.87921142578125,
+        -1133.6190185546875
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string_a",
+          "type": "STRING",
+          "widget": {
+            "name": "string_a"
+          },
+          "link": 122
+        },
+        {
+          "name": "string_b",
+          "type": "STRING",
+          "widget": {
+            "name": "string_b"
+          },
+          "link": 121
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            108,
+            123
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "StringConcatenate"
+      },
+      "widgets_values": [
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "id": 45,
+      "type": "DualCLIPLoader",
+      "pos": [
+        -129.00259399414062,
+        -898.1638793945312
+      ],
+      "size": [
+        315,
+        130
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "CLIP",
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            84,
+            125
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "DualCLIPLoader"
+      },
+      "widgets_values": [
+        "clip_l.safetensors",
+        "t5/t5xxl_fp16.safetensors",
+        "flux",
+        "default"
+      ]
+    },
+    {
+      "id": 37,
+      "type": "ImageResizeKJ",
+      "pos": [
+        -672.590087890625,
+        -543.6146850585938
+      ],
+      "size": [
+        270,
+        238
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 74
+        },
+        {
+          "name": "get_image_size",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "width_input",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "name": "height_input",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            117,
+            118
+          ]
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-kjnodes",
+        "ver": "1.0.9",
+        "Node name for S&R": "ImageResizeKJ"
+      },
+      "widgets_values": [
+        1024,
+        1024,
+        "nearest-exact",
+        false,
+        2,
+        "center"
+      ]
+    },
+    {
+      "id": 62,
+      "type": "Image Rembg (Remove Background)",
+      "pos": [
+        -353.3056335449219,
+        -540.4954223632812
+      ],
+      "size": [
+        364.66668701171875,
+        250
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 118
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            119,
+            120
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "was-node-suite-comfyui",
+        "ver": "1.0.2",
+        "Node name for S&R": "Image Rembg (Remove Background)"
+      },
+      "widgets_values": [
+        false,
+        "u2netp",
+        false,
+        false,
+        true,
+        240,
+        10,
+        10,
+        "white"
+      ]
+    },
+    {
+      "id": 59,
+      "type": "TextOnImage",
+      "pos": [
+        2628.619873046875,
+        -432.8106384277344
+      ],
+      "size": [
+        400,
+        496
+      ],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 111
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            113
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI-Text-On-Image",
+        "ver": "f3d69e8a400cfc078b3b6a705903499658f927bd",
+        "Node name for S&R": "TextOnImage"
+      },
+      "widgets_values": [
+        "TBKH2025\nFLUX Kontext\nTest\n",
+        853,
+        898,
+        16,
+        "#d3c7b6",
+        1,
+        false,
+        "#ff0000",
+        "#0000ff",
+        0,
+        0,
+        "#000000",
+        1,
+        0,
+        0,
+        "#000000",
+        1,
+        "en-AllRoundItalic.ttf"
+      ]
+    },
+    {
+      "id": 40,
+      "type": "ControlNetApplyAdvanced",
+      "pos": [
+        892.6668701171875,
+        -523.8809204101562
+      ],
+      "size": [
+        270,
+        186
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 86
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 126
+        },
+        {
+          "name": "control_net",
+          "type": "CONTROL_NET",
+          "link": 88
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 99
+        },
+        {
+          "name": "vae",
+          "shape": 7,
+          "type": "VAE",
+          "link": 89
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            82
+          ]
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            83
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "ControlNetApplyAdvanced"
+      },
+      "widgets_values": [
+        0.8500000000000002,
+        0,
+        1
+      ]
+    },
+    {
+      "id": 43,
+      "type": "FluxGuidance",
+      "pos": [
+        1221.1298828125,
+        -531.3322143554688
+      ],
+      "size": [
+        317.4000244140625,
+        58
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "conditioning",
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 82
+        }
+      ],
+      "outputs": [
+        {
+          "label": "CONDITIONING",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [
+            97
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "FluxGuidance"
+      },
+      "widgets_values": [
+        7
+      ]
+    },
+    {
+      "id": 61,
+      "type": "easy showAnything",
+      "pos": [
+        -728.4121704101562,
+        -1451.6474609375
+      ],
+      "size": [
+        496.0325012207031,
+        194.32847595214844
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 114
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "1.3.0",
+        "Node name for S&R": "easy showAnything"
+      },
+      "widgets_values": [
+        "The image shows a plush bear. It is shown from the front."
+      ]
+    },
+    {
+      "id": 64,
+      "type": "easy showAnything",
+      "pos": [
+        171.4231719970703,
+        -1452.6700439453125
+      ],
+      "size": [
+        496.0325012207031,
+        194.32847595214844
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 123
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "1.3.0",
+        "Node name for S&R": "easy showAnything"
+      },
+      "widgets_values": [
+        "The image shows a plush bear. It is shown from the front.\nGenerate the ainimal depicted in a clean, clinical X-ray scan style. The internal bone structure is detailed and anatomically plausible, resembling simplified mammalian bones, including a visible spine with vertebrae, ribcage, arms, legs, joints, pelvis, and digits — all proportioned to the animals plush body. The bones are semi-transparent and softly glowing in white and pale blue, rendered with subtle radiographic shadows. The background is dark and neutral to mimic a real X-ray scan. The style is medical, technical, and illustrative — no horror elements, no visible skull, no face or eyes, no soft tissue, no fur, no fabric seams. The overall mood is scientific and clean, not emotional or creepy. High-resolution, radiographic rendering, suitable for veterinary illustration or educational imaging."
+      ]
+    },
+    {
+      "id": 44,
+      "type": "CLIPTextEncode",
+      "pos": [
+        725.5186767578125,
+        -1052.9404296875
+      ],
+      "size": [
+        268.3896789550781,
+        88
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "clip",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 84
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 108
+        }
+      ],
+      "outputs": [
+        {
+          "label": "CONDITIONING",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [
+            86
+          ]
+        }
+      ],
+      "title": "CLIP Text Encode (Positive Prompt)",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 66,
+      "type": "CLIPTextEncode",
+      "pos": [
+        384.5283203125,
+        -887.4828491210938
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 125
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            126
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "low quality, blurry, out of focus, noisy, distorted anatomy, deformed limbs, missing bones, broken joints, horror elements, scary, creepy, disturbing, grotesque, blood, gore, flesh, skin texture, visible eyes, open mouth, facial expression, exposed skull, colorful background, vivid colors, fantasy style, surreal, painterly, cartoon, anime, watercolor, oil painting, overexposed, underexposed, strong shadows, photo artifacts, grain, chromatic aberration, double exposure, body horror, glowing eyes, nightmare style, unsettling, low resolution, soft rendering, plastic texture, shiny surface, incorrect perspective, unrealistic proportions, extra limbs, anatomical errors, fantasy bones, melted shapes, glitch effects, artistic filter, cinematic lighting, emotional tone"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "KSampler",
+      "pos": [
+        1651.6876220703125,
+        -449.2034606933594
+      ],
+      "size": [
+        315,
+        262
+      ],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 77
+        },
+        {
+          "label": "positive",
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 97
+        },
+        {
+          "label": "negative",
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 98
+        },
+        {
+          "label": "latent_image",
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 96
+        }
+      ],
+      "outputs": [
+        {
+          "label": "LATENT",
+          "name": "LATENT",
+          "type": "LATENT",
+          "slot_index": 0,
+          "links": [
+            7
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        812190876421859,
+        "randomize",
+        20,
+        1,
+        "euler",
+        "normal",
+        1
+      ]
+    },
+    {
+      "id": 8,
+      "type": "VAEDecode",
+      "pos": [
+        1978.2926025390625,
+        -232.92660522460938
+      ],
+      "size": [
+        210,
+        46
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "samples",
+          "name": "samples",
+          "type": "LATENT",
+          "link": 7
+        },
+        {
+          "label": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 81
+        }
+      ],
+      "outputs": [
+        {
+          "label": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            112
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 49,
+      "type": "VAEEncode",
+      "pos": [
+        959.2471923828125,
+        -154.05320739746094
+      ],
+      "size": [
+        140,
+        46
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "pixels",
+          "name": "pixels",
+          "type": "IMAGE",
+          "link": 119
+        },
+        {
+          "label": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 95
+        }
+      ],
+      "outputs": [
+        {
+          "label": "LATENT",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            96
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.31",
+        "Node name for S&R": "VAEEncode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 32,
+      "type": "VAELoader",
+      "pos": [
+        498.43438720703125,
+        -95.8805923461914
+      ],
+      "size": [
+        315,
+        58
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "VAE",
+          "name": "VAE",
+          "type": "VAE",
+          "slot_index": 0,
+          "links": [
+            81,
+            89,
+            95
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "diffusion_pytorch_model.safetensors"
+      ]
+    },
+    {
+      "id": 52,
+      "type": "JanusImageUnderstanding",
+      "pos": [
+        -593.7916259765625,
+        -1121.8712158203125
+      ],
+      "size": [
+        377.4410705566406,
+        352.8914489746094
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JANUS_MODEL",
+          "link": 102
+        },
+        {
+          "name": "processor",
+          "type": "JANUS_PROCESSOR",
+          "link": 103
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 117
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "links": [
+            114,
+            122
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "janus-pro",
+        "ver": "4400129e5c33664ae6e927162a39ba4116f44b8b",
+        "Node name for S&R": "JanusImageUnderstanding"
+      },
+      "widgets_values": [
+        "Clearly identify the type of animal (e.g., plush bear, plush rabbit), and specify whether it is shown from the front, side, or back. Keep the description concise and factual.",
+        769672875949872,
+        "randomize",
+        0.30000000000000004,
+        0.9,
+        128
+      ]
+    },
+    {
+      "id": 56,
+      "type": "Text Multiline",
+      "pos": [
+        -125.21704864501953,
+        -1146.1617431640625
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            121
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "was-node-suite-comfyui",
+        "ver": "1.0.2",
+        "Node name for S&R": "Text Multiline"
+      },
+      "widgets_values": [
+        "\nGenerate the ainimal depicted in a clean, clinical X-ray scan style. The internal bone structure is detailed and anatomically plausible, resembling simplified mammalian bones, including a visible spine with vertebrae, ribcage, arms, legs, joints, pelvis, and digits — all proportioned to the animals plush body. The bones are semi-transparent and softly glowing in white and pale blue, rendered with subtle radiographic shadows. The background is dark and neutral to mimic a real X-ray scan. The style is medical, technical, and illustrative — no horror elements, no visible skull, no face or eyes, no soft tissue, no fur, no fabric seams. The overall mood is scientific and clean, not emotional or creepy. High-resolution, radiographic rendering, suitable for veterinary illustration or educational imaging."
+      ]
+    },
+    {
+      "id": 51,
+      "type": "JanusModelLoader",
+      "pos": [
+        -988.9644775390625,
+        -1123.14013671875
+      ],
+      "size": [
+        334.4709777832031,
+        79.43269348144531
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "JANUS_MODEL",
+          "links": [
+            102
+          ]
+        },
+        {
+          "name": "processor",
+          "type": "JANUS_PROCESSOR",
+          "links": [
+            103
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "janus-pro",
+        "ver": "4400129e5c33664ae6e927162a39ba4116f44b8b",
+        "Node name for S&R": "JanusModelLoader"
+      },
+      "widgets_values": [
+        "deepseek-ai/Janus-Pro-1B"
+      ]
+    },
+    {
+      "id": 9,
+      "type": "SaveImage",
+      "pos": [
+        3079.537109375,
+        -487.1374206542969
+      ],
+      "size": [
+        828.9535522460938,
+        893.8475341796875
+      ],
+      "flags": {},
+      "order": 26,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 113
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "ComfyUI"
+      ]
+    },
+    {
+      "id": 17,
+      "type": "LoadImage",
+      "pos": [
+        -1012.1148681640625,
+        -541.6126708984375
+      ],
+      "size": [
+        315,
+        314.0000305175781
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            74
+          ]
+        },
+        {
+          "label": "MASK",
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "IMG-20250422-WA0003.jpg",
+        "image"
+      ]
+    }
+  ],
+  "links": [
+    [
+      7,
+      3,
+      0,
+      8,
+      0,
+      "LATENT"
+    ],
+    [
+      72,
+      36,
+      0,
+      19,
+      0,
+      "IMAGE"
+    ],
+    [
+      74,
+      17,
+      0,
+      37,
+      0,
+      "IMAGE"
+    ],
+    [
+      77,
+      38,
+      0,
+      3,
+      0,
+      "MODEL"
+    ],
+    [
+      81,
+      32,
+      0,
+      8,
+      1,
+      "VAE"
+    ],
+    [
+      82,
+      40,
+      0,
+      43,
+      0,
+      "CONDITIONING"
+    ],
+    [
+      83,
+      40,
+      1,
+      42,
+      0,
+      "CONDITIONING"
+    ],
+    [
+      84,
+      45,
+      0,
+      44,
+      0,
+      "CLIP"
+    ],
+    [
+      86,
+      44,
+      0,
+      40,
+      0,
+      "CONDITIONING"
+    ],
+    [
+      88,
+      47,
+      0,
+      40,
+      2,
+      "CONTROL_NET"
+    ],
+    [
+      89,
+      32,
+      0,
+      40,
+      4,
+      "VAE"
+    ],
+    [
+      95,
+      32,
+      0,
+      49,
+      1,
+      "VAE"
+    ],
+    [
+      96,
+      49,
+      0,
+      3,
+      3,
+      "LATENT"
+    ],
+    [
+      97,
+      43,
+      0,
+      3,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      98,
+      42,
+      0,
+      3,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      99,
+      36,
+      0,
+      40,
+      3,
+      "IMAGE"
+    ],
+    [
+      102,
+      51,
+      0,
+      52,
+      0,
+      "JANUS_MODEL"
+    ],
+    [
+      103,
+      51,
+      1,
+      52,
+      1,
+      "JANUS_PROCESSOR"
+    ],
+    [
+      108,
+      54,
+      0,
+      44,
+      1,
+      "STRING"
+    ],
+    [
+      109,
+      58,
+      0,
+      57,
+      0,
+      "IMAGE"
+    ],
+    [
+      110,
+      58,
+      1,
+      57,
+      2,
+      "MASK"
+    ],
+    [
+      111,
+      57,
+      0,
+      59,
+      0,
+      "IMAGE"
+    ],
+    [
+      112,
+      8,
+      0,
+      57,
+      1,
+      "IMAGE"
+    ],
+    [
+      113,
+      59,
+      0,
+      9,
+      0,
+      "IMAGE"
+    ],
+    [
+      114,
+      52,
+      0,
+      61,
+      0,
+      "*"
+    ],
+    [
+      117,
+      37,
+      0,
+      52,
+      2,
+      "IMAGE"
+    ],
+    [
+      118,
+      37,
+      0,
+      62,
+      0,
+      "IMAGE"
+    ],
+    [
+      119,
+      62,
+      0,
+      49,
+      0,
+      "IMAGE"
+    ],
+    [
+      120,
+      62,
+      0,
+      36,
+      0,
+      "IMAGE"
+    ],
+    [
+      121,
+      56,
+      0,
+      54,
+      1,
+      "STRING"
+    ],
+    [
+      122,
+      52,
+      0,
+      54,
+      0,
+      "STRING"
+    ],
+    [
+      123,
+      54,
+      0,
+      64,
+      0,
+      "*"
+    ],
+    [
+      125,
+      45,
+      0,
+      66,
+      0,
+      "CLIP"
+    ],
+    [
+      126,
+      66,
+      0,
+      40,
+      1,
+      "CONDITIONING"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Prompt",
+      "bounding": [
+        -148.8418731689453,
+        -1229.8607177734375,
+        1202.066162109375,
+        557.2825927734375
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "ControlNet",
+      "bounding": [
+        179.84828186035156,
+        -607.0823364257812,
+        1431.3846435546875,
+        352.1891784667969
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "VAE",
+      "bounding": [
+        483.7015380859375,
+        -222.1118927001953,
+        643.754638671875,
+        193.9827423095703
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 4,
+      "title": "Input Image",
+      "bounding": [
+        -1024.2314453125,
+        -618.0443725585938,
+        1063.6846923828125,
+        410.3218994140625
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 5,
+      "title": "Model",
+      "bounding": [
+        1277.040283203125,
+        -838.7828979492188,
+        307.2514343261719,
+        212.40748596191406
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 6,
+      "title": "AI Prompt",
+      "bounding": [
+        -1028.7955322265625,
+        -1204.747802734375,
+        859.6885375976562,
+        455.04888916015625
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 7,
+      "title": "Watermark and Text on Image",
+      "bounding": [
+        2262.008544921875,
+        -529.41357421875,
+        779.7371215820312,
+        652.8365478515625
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 8,
+      "title": "KSampler and VAE",
+      "bounding": [
+        1641.9935302734375,
+        -530.0601196289062,
+        565.144775390625,
+        366.92041015625
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.5131581182307067,
+      "offset": [
+        2253.2095288314626,
+        638.5125897725432
+      ]
+    },
+    "frontendVersion": "1.18.6"
+  },
+  "version": 0.4
+}

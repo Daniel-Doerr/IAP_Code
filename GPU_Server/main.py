@@ -5,7 +5,7 @@ import click
 
 from dispatcher import WorkflowDispatcher
 
-WEB_SERVER = "http://ssc-teddy.uni-heidelberg.de:3000/" 
+WEB_SERVER = "http://ssc-teddy.iwr.uni-heidelberg.de:8000" 
 
 
 def get_access_token(password: str) -> str:
