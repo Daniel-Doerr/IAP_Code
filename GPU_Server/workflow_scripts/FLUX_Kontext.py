@@ -6,13 +6,13 @@ import torch
 from PIL import Image  
 import random
 
-from important_functions import Functions
+from ..important_functions import Functions
 
 # Change the class name to your workflow name, e.g. "FLUX_Kontext"
 class FLUX_Kontext:
     # You don't need to change this function
-    def __init__(self, functions : Functions):
-        self.functions = functions
+    def __init__(self):
+        self.functions = Functions()
         self.functions.add_comfyui_directory_to_sys_path()
         self.functions.add_extra_model_paths()
         try:

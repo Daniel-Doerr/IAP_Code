@@ -1,10 +1,9 @@
 import os
 import sys
-from important_functions import Functions
 
 # import the workflow class you want to add
-from FLUX_Kontext import FLUX_Kontext
-from IP_Adapter_SDXL import IP_Adapter_SDXL
+from workflow_scripts.FLUX_Kontext import FLUX_Kontext
+from workflow_scripts.IP_Adapter_SDXL import IP_Adapter_SDXL
 
 
 class WorkflowDispatcher:
@@ -22,7 +21,6 @@ class WorkflowDispatcher:
             # example 
             # "name_of_your_workflow": YourWorkflowClassName,
         }
-        self.functions = Functions()
         self.current_workflow = None
 
     def create_workflow(self, workflow_name: str):
@@ -30,7 +28,7 @@ class WorkflowDispatcher:
         workflow_class = self.workflow_class.get(workflow_name)
         if workflow_class:
             # Create an instance of the workflow class
-            workflow_instance = workflow_class(self.functions)
+            workflow_instance = workflow_class()
             self.current_workflow = workflow_instance
             return workflow_instance
         else:
