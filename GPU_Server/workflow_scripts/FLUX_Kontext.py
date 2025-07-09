@@ -17,17 +17,10 @@ from functions import Functions
 # Change the class name to your workflow name, e.g. "FLUX_Kontext"
 class FLUX_Kontext:
     # You don't need to change this function
-    def __init__(self):
-        self.functions = Functions()
-        self.functions.add_comfyui_directory_to_sys_path()
-        self.functions.add_extra_model_paths()
-        try:
-            from nodes import NODE_CLASS_MAPPINGS
-            self.NODE_CLASS_MAPPINGS = NODE_CLASS_MAPPINGS
-        except ImportError:
-            print("Could not import NODE_CLASS_MAPPINGS from nodes.")
-            self.NODE_CLASS_MAPPINGS = {}
-        self.functions.import_custom_nodes()
+    def __init__(self, arg_function):
+        self.functions = arg_function
+
+    def start_load_once(self):
         self.config = self.load_once()
 
 

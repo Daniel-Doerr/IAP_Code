@@ -8,9 +8,9 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 # import the workflow class you want to add
+from functions import Functions
 from workflow_scripts.FLUX_Kontext import FLUX_Kontext
 from workflow_scripts.IP_Adapter_SDXL import IP_Adapter_SDXL
-from functions import Functions
 
 
 class WorkflowDispatcher:
@@ -41,22 +41,21 @@ class WorkflowDispatcher:
         }
 
 
-    def create_workflow_obj(self):
+    def create_workflow_obj(self, gpu_id: int = None):
         """Create and return all workflow objects bound to a specific GPU."""
         workflows = {}
         for name, cls in self.workflow_class.items():
-            workflow_instance = cls(self.functions)
+            workflow_instance = cls(self.functions, gpu_id=gpu_id)
             workflow_instance.NODE_CLASS_MAPPINGS = self.NODE_CLASS_MAPPINGS  # Add NODE_CLASS_MAPPINGS
             workflows[name] = workflow_instance
         return workflows
         
-
-    def create_single_workflow_obj(self, workflow : str):
+    def create_single_workflow_obj(self, gpu_id : int, workflow : str):
         """Create and return a single workflow object bound to a specific GPU."""
         if workflow not in self.workflow_class:
             raise ValueError(f"Workflow '{workflow}' is not defined in the dispatcher.")
         
         cls = self.workflow_class[workflow]
-        workflow_instance = cls(self.functions)
+        workflow_instance = cls(self.functions, gpu_id=gpu_id)
         workflow_instance.NODE_CLASS_MAPPINGS = self.NODE_CLASS_MAPPINGS  # Add NODE_CLASS_MAPPINGS
-        return workflow_instance    
+        return workflow_instance     

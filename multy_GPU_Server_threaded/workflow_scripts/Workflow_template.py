@@ -18,11 +18,30 @@ from functions import Functions
 # Change the class name to your workflow name, e.g. "FLUX_Kontext"
 class YourWorkflowName:
     # You don't need to change this function
-    def __init__(self, arg_function):
+    def __init__(self,arg_function: Functions, gpu_id: int = None):
+        self.gpu_id = gpu_id
+        self.device = self._setup_device()
         self.functions = arg_function
+        
+
+    def _setup_device(self):
+        """Setup the device for this workflow instance."""
+        if self.gpu_id is not None and self.gpu_id >= 0:
+            device = f"cuda:{self.gpu_id}"
+            try:
+                torch.cuda.set_device(self.gpu_id)
+                print(f"Workflow bound to GPU {self.gpu_id}")
+                return device
+            except Exception as e:
+                print(f"Failed to set GPU {self.gpu_id}, falling back to CPU: {e}")
+                return "cpu"
+        else:
+            print("Workflow running on CPU")
+            return "cpu"
 
     def start_load_once(self):
         self.config = self.load_once()
+
 
     def load_once(self):
         """Safe time by loading surtain nodes only once."""
@@ -32,7 +51,7 @@ class YourWorkflowName:
         get_value_at_index = self.functions.get_value_at_index
 
         with torch.inference_mode():
-            print("Loading nodes...")
+            print(f"Loading nodes on {self.device}...")
             # follow the steps 3, 4, 5 and Optional from the generate function
 
 
