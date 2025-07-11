@@ -2,11 +2,31 @@ import requests
 import time
 import os
 import click
+import toml
 
 from dispatcher import WorkflowDispatcher
 
-# WEB_SERVER = "http://ssc-teddy.iwr.uni-heidelberg.de:8000" 
-WEB_SERVER = "http://localhost:8001"  # For local testing, change to your server address
+
+# Load configuration from config.toml file
+# This function reads the configuration file and returns the server settings
+def load_config():
+    """Load configuration from config.toml file."""
+    config_path = os.path.join(os.path.dirname(__file__), "config.toml")
+    try:
+        with open(config_path, 'r') as f:
+            config_data = toml.load(f)
+            return config_data.get("server", {})
+    except FileNotFoundError:
+        print(f"Config file not found at {config_path}. Shutting down.")
+        exit(1)
+    except toml.TomlDecodeError:
+        print(f"Invalid TOML in config file {config_path}. Shutting down.")
+        exit(1)
+
+# Load configuration
+config = load_config()
+WEB_SERVER = config.get("web_server") # Load web server URL from configuration file
+password = config.get("password") # Load password from configuration file
 
 
 def get_access_token(password: str) -> str:
@@ -19,26 +39,41 @@ def get_access_token(password: str) -> str:
 
 
 def poll_job():
-    # TODO: make the password configurable in a config file
-    password = "Password"
-    token = get_access_token(password)
+    global password
+
+    # Try to get access token 
+    token = None
+    while token is None:
+        try:
+            token = get_access_token(password)
+            print("Successfully obtained access token")
+        except Exception as e:
+            print(f"Failed to get access token: {e}")
+            print("Retrying in 5 seconds...")
+            time.sleep(5)
+
+    # Set up headers for authentication
     headers = {"Authorization": f"Bearer {token}"}
 
+    # Create a WorkflowDispatcher instance to manage workflows
     dispatcher = WorkflowDispatcher()
-
+    # Create workflow objects for each workflow type without loading the models yet
     workflow_objects = dispatcher.create_workflow_obj()
 
-    last_workflow = None
+    last_workflow = None # Variable to keep track of the last used workflow object
 
     while True:
         try:
+            # Poll for a job from the web server
             response = requests.get(f"{WEB_SERVER}/job", headers=headers)
+            # Handle unauthorized access
             if response.status_code == 401:
                 print("Unauthorized, refreshing token...")
                 token = get_access_token(password)
                 headers["Authorization"] = f"Bearer {token}"
                 time.sleep(2)
                 continue
+            # Handle no job available
             if response.status_code == 204:
                 print("No job received...")
                 time.sleep(2)
@@ -55,30 +90,32 @@ def poll_job():
             animal_type = response.headers.get("animal_type")
             workflow = response.headers.get("workflow")
 
+            # Check if all required data is present
             if not job_id or not image_bytes or not workflow:
                 print("No valid job data received, skipping...")
                 time.sleep(2)
                 continue
 
-            # Select the appropriate workflow object
+            # Check if the workflow is known
             if workflow not in workflow_objects:
                 print(f"Unknown workflow: {workflow}. Available: {list(workflow_objects.keys())}")
                 time.sleep(2)
                 continue
             
-
+            # Handle animal type "other" for prompting
             if animal_type == "other":
                 animal_type = "stuffed animal"
 
+            # Select the appropriate workflow object
             if workflow_objects[workflow] != last_workflow: 
                 # Delete the last workflow object to free memory
                 if last_workflow is not None:
                     del last_workflow
-                # Re-create the workflow object and update the dictionary
-                workflow_objects[workflow] = dispatcher.create_single_workflow_obj(workflow)
+                # Re-create the last_workflow object and update the dictionary
+                workflow_objects[last_workflow] = dispatcher.create_single_workflow_obj(last_workflow)
                 workflow_objects[workflow].start_load_once()
 
-
+            # set the last_workflow object to the current workflow
             last_workflow = workflow_objects[workflow]
             
             print(f"Job received: {job_id}; Using workflow: {workflow}")
@@ -97,17 +134,33 @@ def poll_job():
                     "image_id": job_id,
                 }
 
+                # Send the result back to the web server
                 res = requests.post(f"{WEB_SERVER}/job", headers={"Authorization": f"Bearer {token}"}, files=files, data=data)
                 print("Result sent:", res.status_code, res.text)
 
-            
+        # Handle exceptions during job processing
         except Exception as e:
             print("Error:", e)
             time.sleep(3)
 
 
-def main():
-    poll_job()
+
+@click.command()
+@click.option('-test', '-t', is_flag=True, help='Run in test mode')
+def main(test):
+    """Main function to start the job polling."""
+    # for testing start the test_server in the testing directory and run the main.py script with the -test or -t flag
+    # Test mode for local testing, without the need for a backend server
+    if test: 
+        print("Running in test mode...")
+        global WEB_SERVER, password
+        WEB_SERVER = "http://localhost:8001"
+        password = "Password"
+        poll_job()
+    else:
+        # Normal mode, connect to the configured backend server
+        # make sure the config.toml file is set up correctly
+        poll_job()
 
 
 if __name__ == "__main__":
