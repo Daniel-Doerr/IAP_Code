@@ -91,7 +91,7 @@ def poll_job():
             workflow = response.headers.get("workflow")
 
             # Check if all required data is present
-            if not job_id or not image_bytes or not workflow:
+            if not job_id or not image_bytes:
                 print("No valid job data received, skipping...")
                 time.sleep(2)
                 continue
@@ -99,8 +99,9 @@ def poll_job():
             # Check if the workflow is known
             if workflow not in workflow_objects:
                 print(f"Unknown workflow: {workflow}. Available: {list(workflow_objects.keys())}")
-                time.sleep(2)
-                continue
+                workflow = "FLUX_Kontext"  # Default to a known workflow
+                # time.sleep(2)
+                # continue
             
             # Handle animal type "other" for prompting
             if animal_type == "other":
