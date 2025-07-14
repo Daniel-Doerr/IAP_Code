@@ -1,4 +1,4 @@
 # Configuration for GPU Server
 [server]
 password = "Password"
-WEB_SERVER = "http://ssc-teddy.iwr.uni-heidelberg.de:8000" 
+WEB_SERVER = "http://_something_:8000" 
