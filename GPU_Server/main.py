@@ -49,8 +49,8 @@ def poll_job():
             print("Successfully obtained access token")
         except Exception as e:
             print(f"Failed to get access token: {e}")
-            print("Retrying in 5 seconds...")
-            time.sleep(5)
+            print("Retrying in 10 seconds...")
+            time.sleep(10)
 
     # Set up headers for authentication
     headers = {"Authorization": f"Bearer {token}"}
@@ -61,6 +61,8 @@ def poll_job():
     workflow_objects = dispatcher.create_workflow_obj()
 
     last_workflow = None # Variable to keep track of the last used workflow object
+
+    no_job_count = 1
 
     while True:
         try:
@@ -76,8 +78,25 @@ def poll_job():
             # Handle no job available
             if response.status_code == 204:
                 print("No job received...")
-                time.sleep(2)
+                no_job_count += 1
+
+                if no_job_count >= 160: # no jobs for 15 minutes 
+                    print("Going into sleep mode! Polling again in 5 minutes.")
+                    if last_workflow is not None:
+                        del workflow_objects[last_workflow]
+                        workflow_objects[last_workflow] = dispatcher.create_single_workflow_obj(last_workflow)
+                        last_workflow = None
+                    time.sleep(300)
+
+                elif no_job_count >= 150: # no jobs for 5 minutes
+                    print("Going into sleep mode! Polling again in 2 minutes.")
+                    time.sleep(120)
+
+                else:
+                    time.sleep(2)
                 continue
+
+            no_job_count = 1
 
             # extract image data
             image_bytes = response.content
@@ -149,7 +168,6 @@ def poll_job():
 @click.command()
 @click.option('-test', '-t', is_flag=True, help='Run in test mode')
 def main(test):
-    """Main function to start the job polling."""
     # for testing start the test_server in the testing directory and run the main.py script with the -test or -t flag
     # Test mode for local testing, without the need for a backend server
     if test: 
