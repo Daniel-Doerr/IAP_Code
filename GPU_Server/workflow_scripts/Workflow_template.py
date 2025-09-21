@@ -51,7 +51,7 @@ class YourWorkflowName:
         NODE_CLASS_MAPPINGS = self.NODE_CLASS_MAPPINGS
         get_value_at_index = self.functions.get_value_at_index
         get_path_from_bytes = self.functions.get_path_from_bytes
-        converte_image = self.functions.converte_image
+        convert_image = self.functions.converte_image
         format_text_for_field = self.functions.format_text_for_field
         # Load the image from bytes
         tmp_path = get_path_from_bytes(image_bytes)
@@ -74,6 +74,6 @@ class YourWorkflowName:
 
             
 
-            result = converte_image(generatedImage)
+            result = convert_image(generatedImage)
             
             return result

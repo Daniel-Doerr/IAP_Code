@@ -25,7 +25,7 @@ def load_config():
 
 # Load configuration
 config = load_config()
-WEB_SERVER = config.get("web_server") # Load web server URL from configuration file
+WEB_SERVER = config.get("WEB_SERVER") # Load web server URL from configuration file
 password = config.get("password") # Load password from configuration file
 
 
@@ -99,7 +99,7 @@ def poll_job():
             # Check if the workflow is known
             if workflow not in workflow_objects:
                 print(f"Unknown workflow: {workflow}. Available: {list(workflow_objects.keys())}")
-                workflow = "FLUX_Kontext"  # Default to a known workflow
+                workflow = "ChromaV44"  # Default to a known workflow
                 # time.sleep(2)
                 # continue
             
@@ -108,16 +108,16 @@ def poll_job():
                 animal_type = "stuffed animal"
 
             # Select the appropriate workflow object
-            if workflow_objects[workflow] != last_workflow: 
+            if workflow != last_workflow: 
                 # Delete the last workflow object to free memory
                 if last_workflow is not None:
-                    del last_workflow
-                # Re-create the last_workflow object and update the dictionary
-                workflow_objects[last_workflow] = dispatcher.create_single_workflow_obj(last_workflow)
+                    del workflow_objects[last_workflow]
+                    # Re-create the last_workflow object and update the dictionary
+                    workflow_objects[last_workflow] = dispatcher.create_single_workflow_obj(last_workflow)
                 workflow_objects[workflow].start_load_once()
 
             # set the last_workflow object to the current workflow
-            last_workflow = workflow_objects[workflow]
+            last_workflow = workflow
             
             print(f"Job received: {job_id}; Using workflow: {workflow}")
             print(f"Patient: {first_name} {last_name}, Animal: {animal_name}, AnimalType: {animal_type}")

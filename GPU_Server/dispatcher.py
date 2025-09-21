@@ -10,6 +10,7 @@ if parent_dir not in sys.path:
 # import the workflow class you want to add
 from workflow_scripts.FLUX_Kontext import FLUX_Kontext
 from workflow_scripts.IP_Adapter_SDXL import IP_Adapter_SDXL
+from workflow_scripts.ChromaV44 import ChromaV44
 from functions import Functions
 
 
@@ -35,7 +36,8 @@ class WorkflowDispatcher:
         # Map workflow names to their corresponding classes
         self.workflow_class = {
             "FLUX_Kontext": FLUX_Kontext, 
-            "IP_Adapter_SDXL": IP_Adapter_SDXL
+            "IP_Adapter_SDXL": IP_Adapter_SDXL,
+            "ChromaV44" : ChromaV44,
             # example 
             # "name_of_your_workflow": YourWorkflowClassName,
         }
