@@ -3,8 +3,23 @@ import time
 import os
 import click
 import toml
+import sys
+import torch
+import signal
 
 from dispatcher import WorkflowDispatcher
+
+# Global flag to handle clean shutdown
+shutdown_requested = False
+
+
+def signal_handler(sig, frame):
+    """Handle Ctrl+C gracefully"""
+    global shutdown_requested
+    print("\n" + "="*60)
+    print("SHUTDOWN REQUESTED - Stopping gracefully...")
+    print("="*60)
+    shutdown_requested = True
 
 
 # Load configuration from config.toml file
@@ -29,6 +44,82 @@ WEB_SERVER = config.get("WEB_SERVER") # Load web server URL from configuration f
 password = config.get("password") # Load password from configuration file
 
 
+def restart_program():
+    """Restart the entire program to completely clear GPU memory"""
+    global shutdown_requested
+    
+    # Check if shutdown was requested - don't restart if user wants to quit
+    if shutdown_requested:
+        print("Shutdown requested - NOT restarting program")
+        exit(0)
+    
+    try:
+        import subprocess
+        print("=" * 60)
+        print("RESTARTING PROGRAM TO CLEAR GPU MEMORY")
+        print("=" * 60)
+        
+        # Get current script path and arguments
+        script_path = sys.argv[0]
+        script_args = sys.argv[1:]
+        
+        # Start new process
+        subprocess.Popen([sys.executable, script_path] + script_args)
+        
+        # Exit current process
+        print("New process started. Exiting current process...")
+        exit(0)
+        
+    except Exception as e:
+        print(f"Failed to restart program: {e}")
+        print("Continuing with current process...")
+
+
+def cleanup_gpu_memory():
+    """Force cleanup of GPU memory including ComfyUI model cache"""
+    try:
+        if torch.cuda.is_available():
+            print("Starting aggressive GPU memory cleanup...")
+            
+            # First try to access ComfyUI's model management
+            try:
+                # Import ComfyUI's model management
+                import model_management
+                
+                # Unload all models from GPU
+                print("Unloading all models from ComfyUI model management...")
+                model_management.unload_all_models()
+                model_management.soft_empty_cache()
+                
+                # Clear model cache completely
+                if hasattr(model_management, 'cleanup_models'):
+                    model_management.cleanup_models()
+                    
+                print("ComfyUI models unloaded")
+                
+            except ImportError:
+                print("ComfyUI model_management not available, skipping model unload")
+            except Exception as e:
+                print(f"Error unloading ComfyUI models: {e}")
+            
+            # Clear PyTorch cache multiple times
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+            
+            # Force garbage collection
+            import gc
+            gc.collect()
+            
+            # Clear cache again after garbage collection
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+            
+            print("Aggressive GPU memory cleanup completed")
+            
+    except Exception as e:
+        print(f"Error during GPU cleanup: {e}")
+
+
 def get_access_token(password: str) -> str:
     """Authenticate with the backend and get a JWT access token."""
     url = f"{WEB_SERVER}/token"
@@ -39,11 +130,14 @@ def get_access_token(password: str) -> str:
 
 
 def poll_job():
-    global password
+    global password, shutdown_requested
 
+    # Set up signal handler for graceful shutdown
+    signal.signal(signal.SIGINT, signal_handler)
+    
     # Try to get access token 
     token = None
-    while token is None:
+    while token is None and not shutdown_requested:
         try:
             token = get_access_token(password)
             print("Successfully obtained access token")
@@ -51,6 +145,10 @@ def poll_job():
             print(f"Failed to get access token: {e}")
             print("Retrying in 10 seconds...")
             time.sleep(10)
+            
+    if shutdown_requested:
+        print("Shutdown requested during token acquisition")
+        return
 
     # Set up headers for authentication
     headers = {"Authorization": f"Bearer {token}"}
@@ -64,7 +162,7 @@ def poll_job():
 
     no_job_count = 1
 
-    while True:
+    while not shutdown_requested:
         try:
             # Poll for a job from the web server
             response = requests.get(f"{WEB_SERVER}/job", headers=headers)
@@ -80,20 +178,42 @@ def poll_job():
                 print("No job received...")
                 no_job_count += 1
 
-                if no_job_count >= 160: # no jobs for 15 minutes 
-                    print("Going into sleep mode! Polling again in 5 minutes.")
+                if no_job_count >= 17: # no jobs for 54 seconds
+                    # Check if any workflow was loaded (if last_workflow is not None)
                     if last_workflow is not None:
-                        del workflow_objects[last_workflow]
-                        workflow_objects[last_workflow] = dispatcher.create_single_workflow_obj(last_workflow)
-                        last_workflow = None
-                    time.sleep(300)
+                        print("Totaler Sleep Mode erreicht! Ein Workflow war aktiv.")
+                        print("Programm wird neugestartet, um GPU-Speicher vollständig zu leeren...")
+                        print("(Drücke Strg+C um das Programm zu beenden statt neuzustarten)")
+                        
+                        # Give user 3 seconds to cancel with Ctrl+C
+                        for i in range(3, 0, -1):
+                            if shutdown_requested:
+                                print("Neustart abgebrochen - Programm wird beendet")
+                                return
+                            print(f"Neustart in {i} Sekunden... (Strg+C zum Abbrechen)")
+                            time.sleep(1)
+                        
+                        if not shutdown_requested:
+                            restart_program()
+                    else:
+                        print("Going into sleep mode! No workflow was active, just waiting...")
+                        for _ in range(30):  # 30 seconds sleep with shutdown check
+                            if shutdown_requested:
+                                return
+                            time.sleep(1)
 
-                elif no_job_count >= 150: # no jobs for 5 minutes
-                    print("Going into sleep mode! Polling again in 2 minutes.")
-                    time.sleep(120)
+                elif no_job_count >= 15: # no jobs for 30 seconds
+                    print("Going into sleep mode! Polling again in 12 seconds.")
+                    for _ in range(12):  # 12 seconds sleep with shutdown check
+                        if shutdown_requested:
+                            return
+                        time.sleep(1)
 
                 else:
-                    time.sleep(2)
+                    for _ in range(2):  # 2 seconds sleep with shutdown check
+                        if shutdown_requested:
+                            return
+                        time.sleep(1)
                 continue
 
             no_job_count = 1
@@ -118,7 +238,7 @@ def poll_job():
             # Check if the workflow is known
             if workflow not in workflow_objects:
                 print(f"Unknown workflow: {workflow}. Available: {list(workflow_objects.keys())}")
-                workflow = "ChromaV44"  # Default to a known workflow
+                workflow = "FLUX_Kontext"  # Default to a known workflow
                 # time.sleep(2)
                 # continue
             
@@ -130,9 +250,25 @@ def poll_job():
             if workflow != last_workflow: 
                 # Delete the last workflow object to free memory
                 if last_workflow is not None:
-                    del workflow_objects[last_workflow]
-                    # Re-create the last_workflow object and update the dictionary
-                    workflow_objects[last_workflow] = dispatcher.create_single_workflow_obj(last_workflow)
+                    print(f"Switching from {last_workflow} to {workflow}, cleaning GPU memory...")
+                    try:
+                        # Clear the workflow object's internal state
+                        workflow_objects[last_workflow].__dict__.clear()
+                        del workflow_objects[last_workflow]
+                        
+                        # Use the dedicated cleanup function
+                        cleanup_gpu_memory()
+                        
+                        # Re-create the last_workflow object and update the dictionary
+                        workflow_objects[last_workflow] = dispatcher.create_single_workflow_obj(last_workflow)
+                        print(f"GPU memory cleaned and {last_workflow} workflow recreated")
+                    except Exception as e:
+                        print(f"Error during workflow cleanup: {e}")
+                        # Re-create anyway
+                        workflow_objects[last_workflow] = dispatcher.create_single_workflow_obj(last_workflow)
+                
+                # Load the new workflow
+                print(f"Loading workflow: {workflow}")
                 workflow_objects[workflow].start_load_once()
 
             # set the last_workflow object to the current workflow
@@ -159,15 +295,34 @@ def poll_job():
                 print("Result sent:", res.status_code, res.text)
 
         # Handle exceptions during job processing
+        except KeyboardInterrupt:
+            print("\nKeyboard interrupt received - shutting down gracefully...")
+            shutdown_requested = True
+            break
         except Exception as e:
             print("Error:", e)
+            if shutdown_requested:
+                break
+            # Clean up GPU memory on error using dedicated function
+            cleanup_gpu_memory()
             time.sleep(3)
+    
+    # Clean shutdown
+    print("Program terminated gracefully")
 
 
 
 @click.command()
 @click.option('-test', '-t', is_flag=True, help='Run in test mode')
 def main(test):
+    # Remove the -test flag from sys.argv so ComfyUI doesn't see it
+    # This preserves the original argv for ComfyUI while allowing our script to process -test
+    original_argv = sys.argv.copy()
+    if '-test' in sys.argv:
+        sys.argv.remove('-test')
+    if '-t' in sys.argv:
+        sys.argv.remove('-t')
+    
     # for testing start the test_server in the testing directory and run the main.py script with the -test or -t flag
     # Test mode for local testing, without the need for a backend server
     if test: 
