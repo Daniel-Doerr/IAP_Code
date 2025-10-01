@@ -14,7 +14,6 @@ shutdown_requested = False
 
 
 def signal_handler(sig, frame):
-    """Handle Ctrl+C gracefully"""
     global shutdown_requested
     print("\n" + "="*60)
     print("SHUTDOWN REQUESTED - Stopping gracefully...")
@@ -76,25 +75,33 @@ def restart_program():
 
 
 def cleanup_gpu_memory():
-    """Force cleanup of GPU memory including ComfyUI model cache"""
     try:
         if torch.cuda.is_available():
-            print("Starting aggressive GPU memory cleanup...")
+            print("Starting GPU memory cleanup...")
             
             # First try to access ComfyUI's model management
             try:
                 # Import ComfyUI's model management
-                import model_management
+                import comfy.model_management
                 
                 # Unload all models from GPU
                 print("Unloading all models from ComfyUI model management...")
-                model_management.unload_all_models()
-                model_management.soft_empty_cache()
-                
+                comfy.model_management.unload_all_models()
+
+                # Free as much memory as possible
+                try:
+                    device = comfy.model_management.get_torch_device()
+                    comfy.model_management.free_memory(1e30, device)
+                except TypeError:
+                    # Fallback for older ComfyUI versions where signature differed
+                    comfy.model_management.free_memory()
+
+                comfy.model_management.soft_empty_cache()
+
                 # Clear model cache completely
-                if hasattr(model_management, 'cleanup_models'):
-                    model_management.cleanup_models()
-                    
+                if hasattr(comfy.model_management, 'cleanup_models'):
+                    comfy.model_management.cleanup_models()
+
                 print("ComfyUI models unloaded")
                 
             except ImportError:
@@ -114,7 +121,7 @@ def cleanup_gpu_memory():
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
             
-            print("Aggressive GPU memory cleanup completed")
+            print("GPU memory cleanup completed")
             
     except Exception as e:
         print(f"Error during GPU cleanup: {e}")
@@ -178,42 +185,33 @@ def poll_job():
                 print("No job received...")
                 no_job_count += 1
 
-                if no_job_count >= 17: # no jobs for 54 seconds
-                    # Check if any workflow was loaded (if last_workflow is not None)
-                    if last_workflow is not None:
-                        print("Totaler Sleep Mode erreicht! Ein Workflow war aktiv.")
-                        print("Programm wird neugestartet, um GPU-Speicher vollständig zu leeren...")
-                        print("(Drücke Strg+C um das Programm zu beenden statt neuzustarten)")
-                        
-                        # Give user 3 seconds to cancel with Ctrl+C
-                        for i in range(3, 0, -1):
-                            if shutdown_requested:
-                                print("Neustart abgebrochen - Programm wird beendet")
-                                return
-                            print(f"Neustart in {i} Sekunden... (Strg+C zum Abbrechen)")
-                            time.sleep(1)
-                        
-                        if not shutdown_requested:
-                            restart_program()
-                    else:
-                        print("Going into sleep mode! No workflow was active, just waiting...")
-                        for _ in range(30):  # 30 seconds sleep with shutdown check
-                            if shutdown_requested:
-                                return
-                            time.sleep(1)
+                if no_job_count >= 960: # no jobs for 1 hour
+                    # Check if any workflow was loaded and clean up
+                    print("Total sleep mode reached! Polling again in 1 minute.")
 
-                elif no_job_count >= 15: # no jobs for 30 seconds
-                    print("Going into sleep mode! Polling again in 12 seconds.")
-                    for _ in range(12):  # 12 seconds sleep with shutdown check
+                    if last_workflow is not None:
+                        print("Resetting program to free GPU memory.")
+                        print("(Press Ctrl+C to terminate the program)")
+                        restart_program()
+                        
+                    for _ in range(2):  # 1 minute sleep with shutdown check
                         if shutdown_requested:
                             return
-                        time.sleep(1)
+                        time.sleep(30)
+
+                elif no_job_count >= 900: # no jobs for 30 minutes
+                    print("Going into sleep mode! Polling again in 30 seconds.")
+                    if last_workflow is not None:
+                        cleanup_gpu_memory()
+                    for _ in range(3):  # 30 seconds sleep with shutdown check
+                        if shutdown_requested:
+                            return
+                        time.sleep(10)
 
                 else:
-                    for _ in range(2):  # 2 seconds sleep with shutdown check
-                        if shutdown_requested:
-                            return
-                        time.sleep(1)
+                    if shutdown_requested: #shutdown check
+                        return
+                    time.sleep(2)
                 continue
 
             no_job_count = 1
@@ -324,7 +322,7 @@ def main(test):
         sys.argv.remove('-t')
     
     # for testing start the test_server in the testing directory and run the main.py script with the -test or -t flag
-    # Test mode for local testing, without the need for a backend server
+    # Test mode for local testing, without the need for an external backend server
     if test: 
         print("Running in test mode...")
         global WEB_SERVER, password
