@@ -1,0 +1,1984 @@
+{
+  "id": "80767774-d39b-4f73-a75a-3c1327f92316",
+  "revision": 0,
+  "last_node_id": 163,
+  "last_link_id": 329,
+  "nodes": [
+    {
+      "id": 159,
+      "type": "LoraLoaderModelOnly",
+      "pos": [
+        1652.2325439453125,
+        -343.9066162109375
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 314
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            315
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "LoraLoaderModelOnly"
+      },
+      "widgets_values": [
+        "Hyper-Chroma-Turbo-Alpha-16steps-lora.safetensors",
+        0.4900000000000001
+      ]
+    },
+    {
+      "id": 69,
+      "type": "EmptySD3LatentImage",
+      "pos": [
+        1653.1566162109375,
+        -58.05105972290039
+      ],
+      "size": [
+        210,
+        106
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.27",
+        "Node name for S&R": "EmptySD3LatentImage",
+        "enableTabs": false,
+        "tabWidth": 65,
+        "tabXOffset": 10,
+        "hasSecondTab": false,
+        "secondTabText": "Send Back",
+        "secondTabOffset": 80,
+        "secondTabWidth": 65
+      },
+      "widgets_values": [
+        1024,
+        1024,
+        1
+      ]
+    },
+    {
+      "id": 76,
+      "type": "UNETLoader",
+      "pos": [
+        1302.591552734375,
+        -345.7212829589844
+      ],
+      "size": [
+        315,
+        82
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            314
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.27",
+        "Node name for S&R": "UNETLoader",
+        "enableTabs": false,
+        "tabWidth": 65,
+        "tabXOffset": 10,
+        "hasSecondTab": false,
+        "secondTabText": "Send Back",
+        "secondTabOffset": 80,
+        "secondTabWidth": 65
+      },
+      "widgets_values": [
+        "chroma-unlocked-v44-detail-calibrated.safetensors",
+        "default"
+      ]
+    },
+    {
+      "id": 90,
+      "type": "ResizeImageNode",
+      "pos": [
+        959.6885986328125,
+        -398.65777587890625
+      ],
+      "size": [
+        270,
+        106
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 192
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            193
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-logicutils",
+        "ver": "1.7.2",
+        "Node name for S&R": "ResizeImageNode"
+      },
+      "widgets_values": [
+        1024,
+        1024,
+        "NEAREST"
+      ]
+    },
+    {
+      "id": 91,
+      "type": "Image Rembg (Remove Background)",
+      "pos": [
+        955.674072265625,
+        -453.50494384765625
+      ],
+      "size": [
+        364.66668701171875,
+        250
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 193
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            194,
+            195,
+            242,
+            297
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "was-node-suite-comfyui",
+        "ver": "1.0.2",
+        "Node name for S&R": "Image Rembg (Remove Background)"
+      },
+      "widgets_values": [
+        false,
+        "u2net",
+        false,
+        false,
+        true,
+        240,
+        10,
+        10,
+        "black"
+      ]
+    },
+    {
+      "id": 92,
+      "type": "PreviewImage",
+      "pos": [
+        962.7382202148438,
+        -497.0449523925781
+      ],
+      "size": [
+        140,
+        246
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 194
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.36",
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 86,
+      "type": "DepthAnythingPreprocessor",
+      "pos": [
+        1237.219482421875,
+        -455.28350830078125
+      ],
+      "size": [
+        315,
+        82
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 195
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            196,
+            311
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui_controlnet_aux",
+        "ver": "1.0.7",
+        "Node name for S&R": "DepthAnythingPreprocessor"
+      },
+      "widgets_values": [
+        "depth_anything_vitl14.pth",
+        1024
+      ]
+    },
+    {
+      "id": 93,
+      "type": "PreviewImage",
+      "pos": [
+        1235.119384765625,
+        -502.6487731933594
+      ],
+      "size": [
+        140,
+        246
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 196
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 127,
+      "type": "PreviewImage",
+      "pos": [
+        1124.2454833984375,
+        -314.1487731933594
+      ],
+      "size": [
+        140,
+        246
+      ],
+      "flags": {},
+      "order": 30,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 265
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 89,
+      "type": "LoadImage",
+      "pos": [
+        757.708740234375,
+        -344.2588195800781
+      ],
+      "size": [
+        315,
+        314
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            192
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.27",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "New Project(11).png",
+        "image"
+      ]
+    },
+    {
+      "id": 110,
+      "type": "AlphaChanelAsMask",
+      "pos": [
+        1237.6241455078125,
+        -551.5139770507812
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 243
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            244
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI-Allor",
+        "ver": "af9caecc2a4e3d432be6aa8b7826da0bc1bb420c",
+        "Node name for S&R": "AlphaChanelAsMask"
+      },
+      "widgets_values": [
+        "invert"
+      ]
+    },
+    {
+      "id": 113,
+      "type": "MaskToImage",
+      "pos": [
+        1236.86376953125,
+        -594.3348388671875
+      ],
+      "size": [
+        184.79998779296875,
+        26
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 244
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            245,
+            255,
+            257
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "MaskToImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 109,
+      "type": "Image Rembg (Remove Background)",
+      "pos": [
+        955.2821044921875,
+        -549.8637084960938
+      ],
+      "size": [
+        364.66668701171875,
+        250
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 242
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            243
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "was-node-suite-comfyui",
+        "ver": "1.0.2",
+        "Node name for S&R": "Image Rembg (Remove Background)"
+      },
+      "widgets_values": [
+        true,
+        "isnet-general-use",
+        false,
+        false,
+        false,
+        240,
+        10,
+        10,
+        "none"
+      ]
+    },
+    {
+      "id": 112,
+      "type": "PreviewImage",
+      "pos": [
+        1240.753662109375,
+        -641.4171142578125
+      ],
+      "size": [
+        140,
+        246
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 245
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 124,
+      "type": "ResizeImageNode",
+      "pos": [
+        1426.6090087890625,
+        -460.076416015625
+      ],
+      "size": [
+        270,
+        106
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 261
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            262
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-logicutils",
+        "ver": "1.7.2",
+        "Node name for S&R": "ResizeImageNode"
+      },
+      "widgets_values": [
+        1024,
+        1024,
+        "NEAREST"
+      ]
+    },
+    {
+      "id": 126,
+      "type": "AddNode",
+      "pos": [
+        1672.586181640625,
+        -389.8454895019531
+      ],
+      "size": [
+        140,
+        46
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 29,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "input1",
+          "type": "*",
+          "link": 264
+        },
+        {
+          "name": "input2",
+          "type": "*",
+          "link": 263
+        }
+      ],
+      "outputs": [
+        {
+          "name": "*",
+          "type": "*",
+          "links": [
+            265,
+            312
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-logicutils",
+        "ver": "1.7.2",
+        "Node name for S&R": "AddNode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 122,
+      "type": "MultiplyNode",
+      "pos": [
+        1671.161376953125,
+        -428.16046142578125
+      ],
+      "size": [
+        140,
+        46
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 28,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "input1",
+          "type": "*",
+          "link": 262
+        },
+        {
+          "name": "input2",
+          "type": "*",
+          "link": 258
+        }
+      ],
+      "outputs": [
+        {
+          "name": "*",
+          "type": "*",
+          "links": [
+            263
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-logicutils",
+        "ver": "1.7.2",
+        "Node name for S&R": "MultiplyNode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 119,
+      "type": "InvertImageNode",
+      "pos": [
+        1671.070556640625,
+        -468.6021728515625
+      ],
+      "size": [
+        140,
+        26
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 27,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 257
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            258
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-logicutils",
+        "ver": "1.7.2",
+        "Node name for S&R": "InvertImageNode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 120,
+      "type": "MultiplyNode",
+      "pos": [
+        1675.336669921875,
+        -513.0519409179688
+      ],
+      "size": [
+        140,
+        46
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 26,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "input1",
+          "type": "*",
+          "link": 311
+        },
+        {
+          "name": "input2",
+          "type": "*",
+          "link": 255
+        }
+      ],
+      "outputs": [
+        {
+          "name": "*",
+          "type": "*",
+          "links": [
+            264
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-logicutils",
+        "ver": "1.7.2",
+        "Node name for S&R": "MultiplyNode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 116,
+      "type": "LoadImage",
+      "pos": [
+        1428.2413330078125,
+        -508.50732421875
+      ],
+      "size": [
+        274,
+        314
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            261
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "monochrome_background.png",
+        "image"
+      ]
+    },
+    {
+      "id": 78,
+      "type": "CLIPLoader",
+      "pos": [
+        1304.62646484375,
+        -214.65911865234375
+      ],
+      "size": [
+        315,
+        106
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            184
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.27",
+        "Node name for S&R": "CLIPLoader",
+        "enableTabs": false,
+        "tabWidth": 65,
+        "tabXOffset": 10,
+        "hasSecondTab": false,
+        "secondTabText": "Send Back",
+        "secondTabOffset": 80,
+        "secondTabWidth": 65
+      },
+      "widgets_values": [
+        "t5xxl_fp16.safetensors",
+        "chroma",
+        "default"
+      ]
+    },
+    {
+      "id": 80,
+      "type": "VAELoader",
+      "pos": [
+        1303.9818115234375,
+        -46.989009857177734
+      ],
+      "size": [
+        315,
+        58
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            180,
+            209
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.27",
+        "Node name for S&R": "VAELoader",
+        "enableTabs": false,
+        "tabWidth": 65,
+        "tabXOffset": 10,
+        "hasSecondTab": false,
+        "secondTabText": "Send Back",
+        "secondTabOffset": 80,
+        "secondTabWidth": 65
+      },
+      "widgets_values": [
+        "FLUX1/flux_vae.safetensors"
+      ]
+    },
+    {
+      "id": 94,
+      "type": "KSampler",
+      "pos": [
+        2366.203369140625,
+        -336.56439208984375
+      ],
+      "size": [
+        270,
+        474
+      ],
+      "flags": {},
+      "order": 32,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 315
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 329
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 222
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 323
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            208
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        1041197043715609,
+        "randomize",
+        15,
+        4,
+        "euler",
+        "beta",
+        0.8000000000000002
+      ]
+    },
+    {
+      "id": 160,
+      "type": "OllamaConnectivityV2",
+      "pos": [
+        761.0955200195312,
+        59.223541259765625
+      ],
+      "size": [
+        270,
+        130
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "connection",
+          "type": "OLLAMA_CONNECTIVITY",
+          "links": [
+            318
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-ollama",
+        "ver": "2.0.4",
+        "Node name for S&R": "OllamaConnectivityV2"
+      },
+      "widgets_values": [
+        "http://127.0.0.1:11435",
+        "mistral-small3.1:24b",
+        5,
+        "minutes"
+      ]
+    },
+    {
+      "id": 147,
+      "type": "easy showAnything",
+      "pos": [
+        1484.2596435546875,
+        89.28388977050781
+      ],
+      "size": [
+        406.9421691894531,
+        309.88427734375
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 290
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "1.3.0",
+        "Node name for S&R": "easy showAnything"
+      },
+      "widgets_values": [
+        "\"Generate a realistic medical-style X-ray image of a plush toy monkey in a seated position, facing forward with an angry expression. The monkey's arms are longer than its legs, and it has large, rounded hands and feet with individual fingers and toes clearly visible. The ears are large and rounded, positioned on the sides of the head, and there is no visible tail. The X-ray should reveal a biologically plausible skeletal structure matching these proportions, with elongated bones in the arms and a defined structure in the hands and feet. The ribcage should be simplified, and the vertebral column should follow the seated posture. The soft tissue appears as a gentle, semi-transparent glow outlining the body and limbs. The image is set on a clean, black radiographic background, realistic and educational in style, without any creepy or unsettling features.\""
+      ]
+    },
+    {
+      "id": 157,
+      "type": "CLIPTextEncode",
+      "pos": [
+        760.9742431640625,
+        242.092041015625
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "## ROLE\nYou are an expert prompt engineer specialized in crafting optimized prompts for Chroma, an AI image generation tool. Your task is to create detailed and effective prompts based on user instructions and base image descriptions.\n\n## TASK\nBased on a style prompt instruction and a base image, craft an optimized Chroma prompt that leverages Chromas capabilities to achieve the desired image modifications. You will be given a set style prompt. The goal is to produce a combined prompt, that accurately describes the base image in the style described in the style prompt. Do not mention colors at all, that are not typical of an X-ray (like red or green).\n\n## CONTEXT\nChroma is an advanced AI tool designed for image generation. It excels at understanding the context of natural language, making it easier generate high quality images. It is based on FLUX and works with natural languages as opposed to comma separated words.\n\n## DEFINITIONS\n- **Chroma**: An AI-powered image generation tool that understands natural language to generate high quality images.\n- **Optimized Chroma Prompt**: A meticulously crafted set of instructions that maximizes the effectiveness of Chroma in achieving the desired image. It includes specific details, preserves important elements, and uses clear and creative instructions. It is achieved by combining the image description with the System instruction, which describes the image. The resulting prompt aims to replicate the input image 1:1 with the changes in the system instruction.\n- **Creative Imagination**: The ability to generate creative and effective solutions or instructions, especially when the initial input is vague or lacks clarity. This involves inferring necessary details and expanding on the users instructions to ensure the final prompt is robust and effective.\n\n## EVALUATION\nThe prompt will be evaluated based on the following criteria:\n- **Clarity**: The prompt should be clear and unambiguous, ensuring that Kontext can accurately interpret and execute the instructions.\n- **Specificity**: The prompt should include specific instructions and details to guide Kontext effectively.\n- **Preservation**: The prompt should explicitly state what elements should remain unchanged, ensuring that important aspects of the original image are preserved.\n- **Creativity**: The prompt should creatively interpret vague instructions, filling in gaps to ensure the final prompt is effective and achieves the desired outcome.\n\n## STEPS\nMake sure to follow these steps one by one, with adapted markdown tags to separate them.\n### 1. UNDERSTAND: Carefully analyze the simple instruction provided by the user. Identify the main objective and any specific details mentioned.\n### 2. DESCRIPTION: Use a detailled description of the base image to provide context for the modifications. This helps in understanding what elements need to be preserved or changed.\n### 3. DETAILS: If the users instruction is vague, use creative imagination to infer necessary details. This may involve expanding on the instruction to include specific elements that should be modified or preserved.\n### 4. FIRST DRAFY: Write the prompt using clear, specific, and creative instructions. Ensure that the prompt includes:\n- Specific modifications or transformations required.\n- Details on what elements should remain unchanged.\n- Clear and unambiguous language to guide Chroma effectively.\n### 5. CRITIC: Review the crafted prompt to ensure it includes all necessary elements and is optimized for Chroma. Make any refinements to improve clarity, specificity, preservation, and creativity.\n### 6. **Final Output** : Write the final prompt in a plain text snippet\n## FORMAT\nThe final output should be a plain text snippet in the following format:\n\n[Detailed and specific instructions based on the users input and base image description, ensuring clarity, specificity, preservation, and creativity.]\n\n**Style Prompt**: Transform the image into a detailed anatomical X-ray of the subject. Replace the plush texture with a visible skeletal structure that aligns with the subjects shapes and size. Set the background to a dark, grainy texture characteristic of X-ray images. Maintain the subjects original pose, ensuring the final image is recognizable as the monkey but with a realistic X-ray aesthetic. Add ribcage and limb bones (arms and legs) as well as a hip bone. All bones in the image should be connected. The produced image should be flat (so not 3d looking)."
+      ]
+    },
+    {
+      "id": 117,
+      "type": "CLIPTextEncode",
+      "pos": [
+        761.2212524414062,
+        290.11004638671875
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "## ROLE\nYou are an expert prompt engineer specialized in crafting optimized prompts for Chroma, an AI image generation tool. Your task is to create detailed and effective prompts based on user instructions and base image descriptions.\n\n## TASK\nBased on a style prompt instruction and a base image, craft an optimized Chroma prompt that leverages Chromas capabilities to achieve the desired image modifications. You will be given a set style prompt. The goal is to produce a combined prompt, that accurately describes the base image in the style described in the style prompt. Do not mention colors at all, that are not typical of an X-ray (like red or green).\n\n## CONTEXT\nChroma is an advanced AI tool designed for image generation. It excels at understanding the context of natural language, making it easier generate high quality images. It is based on FLUX and works with natural languages as opposed to comma separated words.\n\n## DEFINITIONS\n- **Chroma**: An AI-powered image generation tool that understands natural language to generate high quality images.\n- **Optimized Chroma Prompt**: A meticulously crafted set of instructions that maximizes the effectiveness of Chroma in achieving the desired image. It includes specific details, preserves important elements, and uses clear and creative instructions. It is achieved by combining the image description with the System instruction, which describes the image. The resulting prompt aims to replicate the input image 1:1 with the changes in the system instruction.\n- **Creative Imagination**: The ability to generate creative and effective solutions or instructions, especially when the initial input is vague or lacks clarity. This involves inferring necessary details and expanding on the users instructions to ensure the final prompt is robust and effective.\n\n## EVALUATION\nThe prompt will be evaluated based on the following criteria:\n- **Clarity**: The prompt should be clear and unambiguous, ensuring that Kontext can accurately interpret and execute the instructions.\n- **Specificity**: The prompt should include specific instructions and details to guide Kontext effectively.\n- **Preservation**: The prompt should explicitly state what elements should remain unchanged, ensuring that important aspects of the original image are preserved.\n- **Creativity**: The prompt should creatively interpret vague instructions, filling in gaps to ensure the final prompt is effective and achieves the desired outcome.\n\n## STEPS\nMake sure to follow these steps one by one, with adapted markdown tags to separate them.\n### 1. UNDERSTAND: Carefully analyze the simple instruction provided by the user. Identify the main objective and any specific details mentioned.\n### 2. DESCRIPTION: Use a detailled description of the base image to provide context for the modifications. This helps in understanding what elements need to be preserved or changed.\n### 3. DETAILS: If the users instruction is vague, use creative imagination to infer necessary details. This may involve expanding on the instruction to include specific elements that should be modified or preserved.\n### 4. FIRST DRAFY: Write the prompt using clear, specific, and creative instructions. Ensure that the prompt includes:\n- Specific modifications or transformations required.\n- Details on what elements should remain unchanged.\n- Clear and unambiguous language to guide Chroma effectively.\n### 5. CRITIC: Review the crafted prompt to ensure it includes all necessary elements and is optimized for Chroma. Make any refinements to improve clarity, specificity, preservation, and creativity.\n### 6. **Final Output** : Write the final prompt in a plain text snippet\n## FORMAT\nThe final output should be a plain text snippet in the following format:\n\n[Detailed and specific instructions based on the users input and base image description, ensuring clarity, specificity, preservation, and creativity.]\n\n**Style Prompt**: Transform the image into a detailed anatomical X-ray of the subject. Replace the plush texture with a visible skeletal structure that aligns with the subjects shapes and size. Set the background to a dark, grainy texture characteristic of X-ray images. Maintain the subjects original pose, ensuring the final image is recognizable as the monkey but with a realistic X-ray aesthetic. Add ribcage and limb bones (arms and legs) as well as a hip bone. All bones in the image should be connected. The produced image should be flat (so not 3d looking).\n\n**Example**:\n\n**Base Image Description**: A large, seated plush monkey. It faces the viewer directly, with long, outstretched arms and bent legs in a seated position. The monkey's face has downturned eyes and a straight mouth, conveying a slightly grumpy or disappointed expression. The image is presented against a white background, emphasizing the monkey's features and textures.\n\n**Optimized Kontext Prompt**: A detailed anatomical pseudox-ray image of a large, seated plush monkey. The monkey is in a direct-facing, seated position with long, outstretched arms and bent legs. Its face displays downturned eyes and a straight mouth, conveying a slightly grumpy or disappointed expression. Instead of plush texture, the image depicts a visible, perfectly aligned skeletal structure, including a ribcage, distinct limb bones for both arms and legs, and a prominent hip bone. All bones are anatomically correct, proportionally accurate, and seamlessly connected. The background is dark and grainy, characteristic of medical X-ray scans. The overall aesthetic is a realistic, non-creepy scientific scan, clearly recognizable as the original monkey but rendered entirely as flat X-ray."
+      ]
+    },
+    {
+      "id": 143,
+      "type": "SaveImage",
+      "pos": [
+        2671.56591796875,
+        -330.9198913574219
+      ],
+      "size": [
+        488.64373779296875,
+        537.0817260742188
+      ],
+      "flags": {},
+      "order": 37,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 286
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.31",
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "ComfyUI"
+      ]
+    },
+    {
+      "id": 139,
+      "type": "ImageCompositeMasked",
+      "pos": [
+        2372.53857421875,
+        197.870361328125
+      ],
+      "size": [
+        315,
+        146
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 34,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "destination",
+          "type": "IMAGE",
+          "link": 282
+        },
+        {
+          "name": "source",
+          "type": "IMAGE",
+          "link": 287
+        },
+        {
+          "name": "mask",
+          "shape": 7,
+          "type": "MASK",
+          "link": 283
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            284,
+            285
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.31",
+        "Node name for S&R": "ImageCompositeMasked"
+      },
+      "widgets_values": [
+        0,
+        0,
+        false
+      ]
+    },
+    {
+      "id": 142,
+      "type": "TextOnImage",
+      "pos": [
+        2377.06640625,
+        274.3289489746094
+      ],
+      "size": [
+        400,
+        496
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 36,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 285
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            286
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI-Text-On-Image",
+        "ver": "f3d69e8a400cfc078b3b6a705903499658f927bd",
+        "Node name for S&R": "TextOnImage"
+      },
+      "widgets_values": [
+        "Name1 Name2\nMoni",
+        853,
+        898,
+        16,
+        "#d3c7b6",
+        1,
+        false,
+        "#ff0000",
+        "#0000ff",
+        0,
+        0,
+        "#000000",
+        1,
+        0,
+        0,
+        "#000000",
+        1,
+        "arial.ttf"
+      ]
+    },
+    {
+      "id": 140,
+      "type": "LoadImage",
+      "pos": [
+        2374.471923828125,
+        234.9907989501953
+      ],
+      "size": [
+        274,
+        314
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            282
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            283
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.31",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "Watermark1.png",
+        "image"
+      ]
+    },
+    {
+      "id": 141,
+      "type": "SaveImage",
+      "pos": [
+        2516.223388671875,
+        235.2852325439453
+      ],
+      "size": [
+        270,
+        270
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 35,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 284
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.31",
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "ComfyUI"
+      ]
+    },
+    {
+      "id": 82,
+      "type": "T5TokenizerOptions",
+      "pos": [
+        1657.241455078125,
+        -202.114013671875
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 184
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            186,
+            327
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.30",
+        "Node name for S&R": "T5TokenizerOptions",
+        "enableTabs": false,
+        "tabWidth": 65,
+        "tabXOffset": 10,
+        "hasSecondTab": false,
+        "secondTabText": "Send Back",
+        "secondTabOffset": 80,
+        "secondTabWidth": 65
+      },
+      "widgets_values": [
+        1,
+        0
+      ]
+    },
+    {
+      "id": 163,
+      "type": "CLIPTextEncode",
+      "pos": [
+        1928.2015380859375,
+        -338.58331298828125
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 327
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 328
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            329
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.44",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 75,
+      "type": "CLIPTextEncode",
+      "pos": [
+        1927.7784423828125,
+        -92.81218719482422
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 186
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            222
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.27",
+        "Node name for S&R": "CLIPTextEncode",
+        "enableTabs": false,
+        "tabWidth": 65,
+        "tabXOffset": 10,
+        "hasSecondTab": false,
+        "secondTabText": "Send Back",
+        "secondTabOffset": 80,
+        "secondTabWidth": 65
+      },
+      "widgets_values": [
+        "llustration, anime, drawing, artwork, bad hands, blurry, low quality, out of focus, deformed, smudged, red"
+      ]
+    },
+    {
+      "id": 97,
+      "type": "VAEEncode",
+      "pos": [
+        1659.1546630859375,
+        87.95398712158203
+      ],
+      "size": [
+        140,
+        46
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 31,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pixels",
+          "type": "IMAGE",
+          "link": 312
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 209
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            323
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "VAEEncode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 79,
+      "type": "VAEDecode",
+      "pos": [
+        2370.709228515625,
+        315.4511413574219
+      ],
+      "size": [
+        140,
+        46
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 33,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 208
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 180
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            287
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.27",
+        "Node name for S&R": "VAEDecode",
+        "enableTabs": false,
+        "tabWidth": 65,
+        "tabXOffset": 10,
+        "hasSecondTab": false,
+        "secondTabText": "Send Back",
+        "secondTabOffset": 80,
+        "secondTabWidth": 65
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 146,
+      "type": "OllamaGenerateV2",
+      "pos": [
+        1067.805419921875,
+        60.626625061035156
+      ],
+      "size": [
+        400,
+        294
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "connectivity",
+          "shape": 7,
+          "type": "OLLAMA_CONNECTIVITY",
+          "link": 318
+        },
+        {
+          "name": "options",
+          "shape": 7,
+          "type": "OLLAMA_OPTIONS",
+          "link": null
+        },
+        {
+          "name": "images",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 297
+        },
+        {
+          "name": "context",
+          "shape": 7,
+          "type": "OLLAMA_CONTEXT",
+          "link": null
+        },
+        {
+          "name": "meta",
+          "shape": 7,
+          "type": "OLLAMA_META",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "result",
+          "type": "STRING",
+          "links": [
+            290,
+            328
+          ]
+        },
+        {
+          "name": "context",
+          "type": "OLLAMA_CONTEXT",
+          "links": null
+        },
+        {
+          "name": "meta",
+          "type": "OLLAMA_META",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-ollama",
+        "ver": "2.0.4",
+        "Node name for S&R": "OllamaGenerateV2"
+      },
+      "widgets_values": [
+        "",
+        "You are a visual analysis and prompt-engineering specialist. You are shown a single, clear, frontal image of a plush toy animal. Your goal is to:\n\nAnalyze the image carefully and describe the plush animal's external anatomical features in exhaustive detail, including:\n\nThe type of animal it represents (e.g., monkey, bear, rabbit).\n\nThe posture and orientation (e.g., sitting, standing, crouching, head facing forward or tilted).\n\nProportions of the limbs (length of arms vs. legs, relative size of hands and feet).\n\nSize and positioning of ears, eyes, nose, mouth, and tail (if visible).\n\nAny notable stylized features (e.g., exaggerated hands, large eyes, round head, oversized feet). Do not mention colors of the original image.\n\nBased solely on this image description, construct a FLUX prompt for generating a realistic, medically plausible X-ray image of the plush animal as if it had a biological internal structure.\n\nThe FLUX prompt must meet the following criteria:\n\nAccurately reflect the external anatomy, proportions, and posture of the plush animal.\n\nDepict a detailed, friendly skeletal system corresponding to the animal’s body shape and pose. The bones should appear realistic but adapted to the exaggerated or cartoonish proportions of the plush.\n\nLimbs, hands, feet, ears, and tail (if present) must have anatomically plausible bone structures, adjusted to match the stylized features seen in the image.\n\nInclude only bones and soft-tissue glow; no internal organs or disturbing anatomical details.\n\nSoft-tissue glow should create a gentle, non-creepy X-ray effect, emphasizing bone contrast while allowing for a subtle outline of the body and limbs.\n\nPresent the X-ray in a clean, clinical radiographic style with a neutral or black background, without any horror elements or unsettling features.\n\nYour output must be only the final FLUX prompt, written in natural language, descriptive, precise, and fully self-contained.\n\nExample output structure (you must replace placeholders with accurate descriptions from the image):\n\n“A realistic medical-style X-ray image of a [detailed animal type and description], with its [head facing direction], [pose], [detailed limb proportions], and [specific features like ear size, hand shape, tail presence]. The X-ray reveals a biologically plausible skeletal structure matching its proportions, with elongated bones in the [arms/legs], defined phalanges in [hands/feet], a simplified ribcage, vertebral column following the posture, and structural support in the [ears/tail if applicable]. The soft tissue appears as a gentle, semi-transparent glow outlining the body and limbs. The image is set on a clean, black radiographic background, realistic and educational in style, without any creepy or unsettling features.”",
+        true,
+        false,
+        "text"
+      ]
+    }
+  ],
+  "links": [
+    [
+      180,
+      80,
+      0,
+      79,
+      1,
+      "VAE"
+    ],
+    [
+      184,
+      78,
+      0,
+      82,
+      0,
+      "CLIP"
+    ],
+    [
+      186,
+      82,
+      0,
+      75,
+      0,
+      "CLIP"
+    ],
+    [
+      192,
+      89,
+      0,
+      90,
+      0,
+      "IMAGE"
+    ],
+    [
+      193,
+      90,
+      0,
+      91,
+      0,
+      "IMAGE"
+    ],
+    [
+      194,
+      91,
+      0,
+      92,
+      0,
+      "IMAGE"
+    ],
+    [
+      195,
+      91,
+      0,
+      86,
+      0,
+      "IMAGE"
+    ],
+    [
+      196,
+      86,
+      0,
+      93,
+      0,
+      "IMAGE"
+    ],
+    [
+      208,
+      94,
+      0,
+      79,
+      0,
+      "LATENT"
+    ],
+    [
+      209,
+      80,
+      0,
+      97,
+      1,
+      "VAE"
+    ],
+    [
+      222,
+      75,
+      0,
+      94,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      242,
+      91,
+      0,
+      109,
+      0,
+      "IMAGE"
+    ],
+    [
+      243,
+      109,
+      0,
+      110,
+      0,
+      "IMAGE"
+    ],
+    [
+      244,
+      110,
+      0,
+      113,
+      0,
+      "MASK"
+    ],
+    [
+      245,
+      113,
+      0,
+      112,
+      0,
+      "IMAGE"
+    ],
+    [
+      255,
+      113,
+      0,
+      120,
+      1,
+      "*"
+    ],
+    [
+      257,
+      113,
+      0,
+      119,
+      0,
+      "IMAGE"
+    ],
+    [
+      258,
+      119,
+      0,
+      122,
+      1,
+      "*"
+    ],
+    [
+      261,
+      116,
+      0,
+      124,
+      0,
+      "IMAGE"
+    ],
+    [
+      262,
+      124,
+      0,
+      122,
+      0,
+      "*"
+    ],
+    [
+      263,
+      122,
+      0,
+      126,
+      1,
+      "*"
+    ],
+    [
+      264,
+      120,
+      0,
+      126,
+      0,
+      "*"
+    ],
+    [
+      265,
+      126,
+      0,
+      127,
+      0,
+      "IMAGE"
+    ],
+    [
+      282,
+      140,
+      0,
+      139,
+      0,
+      "IMAGE"
+    ],
+    [
+      283,
+      140,
+      1,
+      139,
+      2,
+      "MASK"
+    ],
+    [
+      284,
+      139,
+      0,
+      141,
+      0,
+      "IMAGE"
+    ],
+    [
+      285,
+      139,
+      0,
+      142,
+      0,
+      "IMAGE"
+    ],
+    [
+      286,
+      142,
+      0,
+      143,
+      0,
+      "IMAGE"
+    ],
+    [
+      287,
+      79,
+      0,
+      139,
+      1,
+      "IMAGE"
+    ],
+    [
+      290,
+      146,
+      0,
+      147,
+      0,
+      "*"
+    ],
+    [
+      297,
+      91,
+      0,
+      146,
+      2,
+      "IMAGE"
+    ],
+    [
+      311,
+      86,
+      0,
+      120,
+      0,
+      "*"
+    ],
+    [
+      312,
+      126,
+      0,
+      97,
+      0,
+      "IMAGE"
+    ],
+    [
+      314,
+      76,
+      0,
+      159,
+      0,
+      "MODEL"
+    ],
+    [
+      315,
+      159,
+      0,
+      94,
+      0,
+      "MODEL"
+    ],
+    [
+      318,
+      160,
+      0,
+      146,
+      0,
+      "OLLAMA_CONNECTIVITY"
+    ],
+    [
+      323,
+      97,
+      0,
+      94,
+      3,
+      "LATENT"
+    ],
+    [
+      327,
+      82,
+      0,
+      163,
+      0,
+      "CLIP"
+    ],
+    [
+      328,
+      146,
+      0,
+      163,
+      1,
+      "STRING"
+    ],
+    [
+      329,
+      163,
+      0,
+      94,
+      1,
+      "CONDITIONING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.6490139733519784,
+      "offset": [
+        -1087.8176394137984,
+        687.2107648753373
+      ]
+    },
+    "frontendVersion": "1.23.4",
+    "ue_links": []
+  },
+  "version": 0.4
+}

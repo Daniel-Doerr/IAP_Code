@@ -111,20 +111,35 @@ class ChromaV44:
         tmp_path = get_path_from_bytes(image_bytes)
 
         with torch.inference_mode():
-            # How to put your own workflow here 
-            # Step 1: You need to export yor own workflow as a Python skript from ComfyUI 
-            # Step 2: Copy all code from the scripts main function into this function
-            # Step 3: Using "Ctrl + f" search for "NODE_CLASS_MAPPINGS" and move all lines of code into the "load_once" function
-            # Step 4: Now search for ".safetensors" and move all lines of code into the "load_once" function
-            # Step 5: Now search for "model_name" or "modelloader" and move all lines of code into the "load_once" function
-            # Optional: You can also move static Prompts or images into the "load_once" function, just nothing that depends directly or indirectly on the input image
-            # Step 6: Locate your input image and change the code to "loadimage_X = loadimage.load_image(image=tmp_path)" (X = a number, e.g. 17)
-            # If you use an IP-Adapter or watermark check that the path is correct
-            # If you use text on the image, you can use "format_text_for_field(your_text_input)" to format the text correctly for the field
-            # Step 7: Remove "saveimge_X" because we don't need to save the image in the workflow, we return it as a buffer
-            # Step 8: Change in "convert_image(generatedImage)" generatedImage to the last generated image, e.g. "convert_image(textonimage_59)"
-            # Step 9 : Change the name of the class to the name of your workflow, e.g. "FLUX_Kontext" and change the name of the file
-            # Step 10: Go into the dispatcher.py and follow the steps to add your workflow to the dispatcher
+        # How to implement your own workflow:
+        # You need a ComfyUI workflow and a tool to export it as a Python script (e.g., https://github.com/pydn/ComfyUI-to-Python-Extension).
+        #
+        # 1. Export the workflow into a Python script.
+        # 2. Open the exported file, go to the 'main' function, and copy all the code from inside the 'with torch.inference_mode():' block.
+        #
+        # To optimize performance by loading models only once (recommended):
+        # 3. Search for "NODE_CLASS_MAPPINGS" and move all related initializations to the 'load_once' function.
+        # 4. Search for ".safetensors" and move all code lines that load these files into the 'load_once' function.
+        # 5. Search for "model_name" or "modelloader" and move those lines into the 'load_once' function as well.
+        #    Optionally, move any static assets (e.g., watermarks) that don't depend on the input image to 'load_once'.
+        #
+        # 6. In the 'generate' function, find the input image loading step (e.g., 'loadimage_X') and change it to:
+        #    loadimage_X = loadimage.load_image(image=tmp_path)
+        #    Ensure paths for constant images (like IP-Adapter inputs or watermarks) are correct.
+        #    For text overlays, use format_text_for_field(your_text_input, line_length, num_lines) from 'functions.py'.
+        #
+        # 7. Remove the 'saveimage_Y' step at the end, as the image is returned as a buffer, not saved.
+        #
+        # 8. In the 'convert_image(generatedImage)' call, replace 'generatedImage' with the variable holding the final processed image
+        #    (e.g., 'convert_image(textonimage_142)').
+        #
+        # 9. Rename the class and the file to match your workflow's name (e.g., "FLUX_Kontext").
+        #
+        # Final steps in 'dispatcher.py':
+        # 10. Import your new workflow: from workflow_scripts.[workflow_name] import [ClassName]
+        # 11. Add your workflow to the 'workflow_class' dictionary: "[workflow_name]": [ClassName]
+        #
+        # You can also set your new workflow as the default in 'main.py'.
 
             
             loadimage_89 = loadimage.load_image(image=tmp_path)
