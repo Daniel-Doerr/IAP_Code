@@ -105,6 +105,68 @@ For information about your CPU and GPU you can use the `testing/test_mem.py` scr
 
 This section is aimed at anyone who wants to contribute to the code or delve deeper into the technical details. We hope to guide possible future development with the work we did. See the text below as for why specific choices were made.
 
+
+
+# GPU Server Architecture
+
+The GPU server is a Python application designed for processing AI workflows, particularly in the field of image generation. The architecture is modular and consists of several core components.
+
+
+
+### How it works (GPU)
+
+This part outlines the architecture and operational flow of the GPU server.
+
+-   **`main.py`**: Responsible for polling for jobs, managing resources, and error handling.
+-   **`dispatcher.py`**: Responsible for handling the workflow objects.
+-   **`functions.py`**: Includes the necessary and additional functions for the workflows.
+-   **`"The_workflow.py"`**: A specific workflow script (e.g., `ChromaV44.py`) responsible for generating an image.
+
+
+### Job Processing Flow
+
+The process begins when `main.py` is executed. It follows a structured sequence of initialization, authentication, and a continuous polling loop to receive and process jobs.
+
+1.  **Initialization and Authentication**:
+    *   The server starts and loads its configuration from `config.toml`, which specifies the backend URL and authentication credentials.
+    *   It sends a request to the backend's `/token` endpoint to obtain a JWT (JSON Web Token). This token is required for all subsequent authenticated API calls.
+    *   If authentication fails, the server retries every 10 seconds until it succeeds.
+
+2.  **Workflow Dispatcher Setup**:
+    *   Once authenticated, `main.py` creates an instance of the `WorkflowDispatcher`.
+    *   The dispatcher's primary role is to prepare the environment for ComfyUI. It adds the necessary ComfyUI and model directories to the system path.
+    *   It then discovers and instantiates all available workflow classes (like `FLUX_Kontext`, `ChromaV44`, etc.) defined in the `workflow_scripts/` directory. It's important to note that at this stage, only the Python objects for the workflows are created; the heavy AI models are **not** loaded into memory yet.
+
+3.  **Polling for Jobs**:
+    *   The server enters an infinite loop, continuously polling the backend's `/job` endpoint every 2 seconds to check for new tasks.
+    *   **If no job is available** (HTTP 204), the server simply waits and polls again. It includes logic for resource management during idle periods:
+        *   After 30 minutes of inactivity, it calls `cleanup_gpu_memory()` to free up VRAM.
+        *   After 1 hour of inactivity, it triggers a full restart (`restart_program()`) to ensure a clean state and prevent memory leaks.
+    *   **If a job is available** (HTTP 200), the backend sends the job data.
+
+4.  **Receiving and Preparing the Job**:
+    *   The job data is received: the input image arrives in the response body, while metadata (like `job_id`, `workflow` name, and patient/animal details) is passed in the response headers.
+    *   The server checks which workflow is requested (e.g., `"ChromaV44"`).
+
+5.  **Workflow and Model Loading**:
+    *   The server compares the requested workflow with the previously executed one.
+    *   **If the workflow has changed**, it first calls `cleanup_gpu_memory()` to unload all models from the previous workflow, freeing up the GPU.
+    *   Then, it calls the `start_load_once()` method on the new workflow object. This method loads all the necessary models (like UNET, VAE, LoRAs) into GPU memory. This "load-once" approach ensures that models are only loaded when the workflow type is first activated, saving significant time on subsequent jobs of the same type.
+
+6.  **Image Generation**:
+    *   With the correct models loaded, `main.py` calls the `generate()` method of the active workflow object, passing the input image and all metadata.
+    *   The `generate()` method within the workflow script (e.g., `ChromaV44.py`) executes the ComfyUI graph step-by-step, processing the input image and text prompts to create the final artwork.
+
+7.  **Returning the Result**:
+    *   The `generate()` method returns the final image as an in-memory byte buffer.
+    *   `main.py` receives this buffer and sends it back to the backend via a POST request to the `/job` endpoint, along with the original `job_id` to associate the result with the correct task.
+    *   The server then prints the status of the upload and immediately polls for the next job, restarting the cycle.
+
+
+
+
+
+
 ### AI Pipeline and Generation Process
 
 The AI pipeline is based on **ComfyUI**. The detailed generation process includes the following steps:
