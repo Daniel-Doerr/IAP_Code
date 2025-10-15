@@ -1,505 +1,205 @@
-# Teddy Bear Hospital and Beginner Internship Project
 
-![Teddy Bear X-Ray](https://img.shields.io/badge/AI-Powered-blue) ![Python](https://img.shields.io/badge/Python-3.8+-green) ![GPU](https://img.shields.io/badge/GPU-Required-red) ![License](https://img.shields.io/badge/License-Open%20Source-brightgreen)
 
+# Teddy Bear Hospital
+
+Welcome to the **Teddy Bear Hospital X-Ray** project of Heidelberg University! The tool developed here allows children to "x-ray" their beloved stuffed animals on a playful and interactive way, receiving unique, personalized "x-ray images." This provides young visitors with a tangible souvenir of their visit to the Teddy Bear Hospital.
 ## Table of Contents
-1. [Introduction](#introduction)
-2. [Project Architecture](#project-architecture)
-3. [Hardware Requirements](#hardware-requirements)
-4. [Installation Guide](#installation-guide)
-5. [Available Workflows](#available-workflows)
-6. [How to Use](#how-to-use)
-7. [Explanation of Image Generation](#explanation-of-image-generation)
-8. [Adding Custom Workflows](#adding-custom-workflows)
-9. [Testing](#testing)
-10. [Contributions](#contributions)
-11. [License](#license)
 
-## Introduction 
+* [About the Project](#about-the-project)
+* [For System Administrators](#for-system-administrators)
+* [For Enthusiasts and Developers](#for-enthusiasts-and-developers)
+* [License](#license)
 
-Many children are afraid of going to the doctor or hospital. To help them feel more comfortable, some universities and hospitals organize a special event called a **Teddy Bear Hospital**. In this project, children bring their favorite stuffed animals — usually teddy bears — to a play hospital. There, medical students act as "teddy doctors" who examine, treat, and care for the toys. This playful experience helps children understand medical procedures in a fun and relaxed way, making future visits to real doctors less scary.
+-----
 
-As part of my beginner internship for my computer science studies, I was part of a group that contributed to this project with a technical twist: We built a **fake X-ray machine** for the teddy bears. The idea was to make the experience even more exciting and realistic for the children.
+## About the Project
 
-Here is how it works:
-- The teddy bear is placed into a white background.
-- A picture of the teddy bear is taken.
-- Then, using **Stable Diffusion**, an AI image generation model, the photo is transformed into a creative "X-ray image" of the bear.
-- The result is shown on a screen and will be available for download through a personalized QR code.
+The Teddy Bear Hospital project transforms images of stuffed animals into "pseudo-x-ray images" using AI diffusion technology. This offers an interactive and modern alternative to traditional, pre-printed skeleton drawings and allows for higher accuracy and personalization. The resulting images can be viewed directly on-site and accessed online, allowing children to take their "x-rayed" stuffed animal home as a unique souvenir.
 
-It's just for fun and a great way to introduce children to both medicine and technology in a creative, friendly way. 
+This project was completed by a group of six Computer Science Bsc. Students at Heidelberg University during summer semester 2025. As such, this project will most likely not be maintained.
 
-## Project Architecture
+### Advantages over the previous solution:
 
-This project is split into two main components:
+  * **Significantly more accurate:** The generated images adapt to the individual stuffed animal.
+  * **"Take-away" (online):** Images can be accessed and shared via a QR code.
+  * **Recognition of the stuffed animal:** Each "x-ray image" is unique to the scanned stuffed animal.
 
-### 🖥️ **GPU Server Side** (This Repository)
-- **Purpose**: Handles AI image generation using ComfyUI and Stable Diffusion
-- **Location**: `/GPU_Server/` directory
-- **Technology**: Python, PyTorch, ComfyUI, Stable Diffusion models
-- **Responsibility**: Processes images and generates X-ray style outputs
 
-### 🌐 **Frontend and Backend** 
-- **Purpose**: Web interface, user management, and API endpoints
-- **Location**: Parent directory (separate from this GPU server component)
-- **Technology**: Web framework for user interaction and job management
-- **Responsibility**: Handles user uploads, job queuing, and result delivery
+## For System Administrators
 
-### Communication Flow
-```
-Frontend → Backend API → GPU Server → AI Processing → Result → Backend → Frontend
-```
+### Installation Steps
 
-## Hardware Requirements
+The system installation includes setting up a Python environment, installing ComfyUI and Ollama, and loading the required models. 
+Running the workflow can either happen within ComfyUI or using the provided `.py` file and ran as a script without interface. Both approached still require ComfyUI to be installed.
 
-⚠️ **GPU Required** - This is called "GPU-Server" for a reason!
+1. Create and start python enviorment
+1. Install [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
+2. Install [ComfyUI Manager](https://github.com/Comfy-Org/ComfyUI-Manager)
+3. Install [Ollama](https://ollama.com/download)
+4. Start ComfyUI
+5. Head over to the ComfyUI Menu and look for Custom Node Manager search for and install the following Custom Node Packs:
+    * [Comfyui\_Controlnet_Aux](https://github.com/Fannovel16/comfyui_controlnet_aux)
+    * [ComfyUI-Easy-Use](https://github.com/yolain/ComfyUI-Easy-Use)
+    * [Comfyui-Ollama](https://github.com/stavsap/comfyui-ollama)
+    * [ComfyUI-Allor](https://github.com/Nourepide/ComfyUI-Allor)
+    * [ComfyUI-LogicUtils](https://github.com/aria1th/ComfyUI-LogicUtils)
+    * [WAS-Node-Suite-Comfyui](https://github.com/WASasquatch/was-node-suite-comfyui)
+    * [ComfyUI-Text-On-Image](https://github.com/S4MUEL-404/ComfyUI-Text-On-Image)
+6. Download [Chroma](https://huggingface.co/lodestones/Chroma) and place it into the `ComfyUI/models/diffusion_models`. Download and install all necesarry CLIP encoders (you can find them on the Chroma Model Card Page on Huggingface)
+7. Download [Mistral-Small 3.1:24B](https://ollama.com/library/mistral-small3.1) using `ollama pull mistral-small3.1:24b`
+8. Downloard [Depth-Anything](https://huggingface.co/spaces/LiheYoung/Depth-Anything/blob/main/checkpoints/depth_anything_vitl14.pth)
+8. Import the Workflow `assets/Chroma_X-Ray_LLM.json` into ComfyUI and start generating images.
 
-### Minimum Requirements
-- **GPU**: NVIDIA GPU with 8GB+ VRAM
-- **RAM**: 16GB+ system RAM
-- **Storage**: 50GB+ free space for models
-- **OS**: Linux (recommended) or Windows with WSL2
 
-### Recommended Setup
-- **GPU**: NVIDIA RTX 4090, A100, or similar high-end GPU
-- **VRAM**: 16GB+ for optimal performance
-- **RAM**: 32GB+ system RAM
-- **Storage**: SSD with 100GB+ free space
+For the web app components, further specific steps are necessary, which will be added later.
 
-### Model-Specific VRAM Requirements
-- **FLUX_Kontext**: ~12GB VRAM
-- **IP_Adapter_SDXL**: ~8GB VRAM
-- **Custom workflows**: Varies based on model complexity
+### Recommended Hardware Configuration
 
-> 💡 **Note**: Performance and generation time will vary significantly based on your GPU. The test server used an NVIDIA A100 80GB for reference benchmarks.
+For smooth operation, an Nvidia GPU with sufficient VRAM is recommended to meet the requirements of Chroma and Mistral-Small 3.1:22B simultaneously.
+Mistral-Small 3.1:24B is quoted to require 24GB of dedicated VRAM or 32GB of unified VRAM. Chroma on the other hand, is quoted to need about 17GB of dedicated VRAM.
 
-## Installation Guide
+In other words, this workflow requires modern, powerful hardware to run. Of course, Mistral-Small 3.1:24B can be switched out for any other multimodal LLM, such as Google's Gemma3, Qwen or distilled DeepSeek models. The only important requirements for the LLMs is acccepting images as input and being able to accurately describe the subject, as that is relevant for the workflow.
 
-### Prerequisites
-1. **NVIDIA GPU Drivers**: Latest drivers installed
-2. **CUDA**: CUDA 11.8 or 12.1+ installed
-3. **Python**: Python 3.8 or higher
-4. **Git**: For cloning repositories
+For speed, models should fit into VRAM simultanously, but can, of course, be loaded one after another if VRAM is tight.
 
-### Step-by-Step Installation
+### Supported Operating Systems
 
-#### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd IAP_Code/GPU_Server
-```
+The system is compatible with all operating systems where ComfyUI and Ollama run. This was teseted on Linux, so specific implimentation challenges for other systems may not be adressed.
 
-#### 2. Install ComfyUI
-```bash
-# Clone ComfyUI in the parent directory
-cd ..
-git clone https://github.com/comfyanonymous/ComfyUI.git
-cd ComfyUI
+### System Start, Stop, and Restart
 
-# Install ComfyUI dependencies
-pip install -r requirements.txt
-```
-
-#### 3. Install Python Dependencies
-```bash
-cd ../GPU_Server
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-pip install requests click pillow numpy opencv-python
-```
-
-#### 4. Install Custom Nodes (Required)
-```bash
-cd ../ComfyUI/custom_nodes
-
-# Install essential custom nodes
-git clone https://github.com/ltdrdata/ComfyUI-Manager.git
-git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git
-git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus.git
-git clone https://github.com/AIGODLIKE/AIGODLIKE-ComfyUI-Translation.git
-
-# Install dependencies for custom nodes
-pip install -r ComfyUI-Manager/requirements.txt
-```
-
-#### 5. Download Required Models
-
-Create the necessary directories and download models:
-
-```bash
-cd ../models
-
-# Download base models (examples - adjust URLs as needed)
-mkdir -p checkpoints controlnet vae clip
-
-# FLUX models
-wget -O checkpoints/flux1-kontext-dev.safetensors [FLUX_MODEL_URL]
-
-# SDXL models  
-wget -O checkpoints/sd_xl_base_1.0.safetensors [SDXL_BASE_URL]
-wget -O checkpoints/SDXL/sd_xl_refiner_1.0.safetensors [SDXL_REFINER_URL]
-
-# ControlNet models
-wget -O controlnet/FLUX.1/Shakker-Labs-ControlNet-Union-Pro/diffusion_pytorch_model.safetensors [CONTROLNET_FLUX_URL]
-wget -O controlnet/SDXL/controlnet-union-sdxl-1.0/diffusion_pytorch_model_promax.safetensors [CONTROLNET_SDXL_URL]
-
-# VAE models
-wget -O vae/diffusion_pytorch_model.safetensors [VAE_URL]
-
-# CLIP models
-wget -O clip/clip_l.safetensors [CLIP_L_URL]
-wget -O clip/t5/t5xxl_fp16.safetensors [T5_URL]
-```
-
-#### 6. Configure Model Paths
-Create `extra_model_paths.yaml` in the ComfyUI directory:
-
-```yaml
-comfyui:
-    checkpoints: models/checkpoints/
-    controlnet: models/controlnet/
-    vae: models/vae/
-    clip: models/clip/
-```
-
-#### 7. Test Installation
-```bash
-cd ../GPU_Server
-python test_main.py
-```
-
-### Troubleshooting Installation
-
-**Common Issues:**
-
-1. **CUDA out of memory**: Reduce batch size or use a smaller model
-2. **Missing models**: Check model paths and download status
-3. **Import errors**: Ensure all custom nodes are properly installed
-4. **Permission errors**: Check file permissions and run with appropriate privileges
-
-## Available Workflows
-
-The system currently supports two main AI workflows:
-
-### 🚀 FLUX_Kontext
-- **Model Type**: FLUX-based diffusion model
-- **VRAM Requirement**: ~12GB
-- **Strengths**: High-quality image generation, good at understanding context
-- **Use Case**: Best for detailed, anatomically accurate X-ray generation
-- **Generation Time**: ~15-30 seconds on A100
-
-### 🎨 IP_Adapter_SDXL  
-- **Model Type**: Stable Diffusion XL with IP-Adapter
-- **VRAM Requirement**: ~8GB
-- **Strengths**: Style transfer, consistent character features
-- **Use Case**: Good for stylized X-ray effects with consistent animal appearance
-- **Generation Time**: ~20-40 seconds on A100
-
-### Model Comparison
-
-| Feature | FLUX_Kontext | IP_Adapter_SDXL |
-|---------|--------------|------------------|
-| Quality | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Speed | ⭐⭐⭐⭐ | ⭐⭐⭐ |
-| VRAM Usage | High | Medium |
-| Anatomical Accuracy | Excellent | Good |
-| Style Consistency | Good | Excellent |
-
-## How to Use
-
-### Running the GPU Server
-
-1. **Start the server:**
-```bash
-cd GPU_Server
+Before you start the GPU Worker you first have to setup the ‘config.toml’ file. First enter the same password you used for the backend but this time not hashed. Secondly enter the URL where the backend server is setup. If you have not jet setup the backend server, you can go to [testing](#testing) where this setup is not required. 
+To start the GPU Worker go to the ‘GPU_server’ folder and run the main with:
+```shell 
 python main.py
 ```
-
-2. **Select workflow:**
-The system will prompt you to choose between available workflows:
-- `FLUX_Kontext`
-- `IP_Adapter_SDXL`
-
-3. **Server operation:**
-The server will:
-- Connect to the backend API
-- Poll for new image processing jobs
-- Process images using the selected AI workflow
-- Return generated X-ray images
-
-### API Integration
-
-The GPU server communicates with the backend via REST API:
-
-**Authentication:**
-```http
-POST /token
-Content-Type: application/x-www-form-urlencoded
-
-password=your_password
+This will bind the GPU Worker to your shell, so if you close your shell the Worker will terminate also you can use ctrl + c to terminate the script. 
+To run the Worker independently you can use 
+```shell
+nohup python main.py > log.txt 2>&1 &
 ```
-
-**Job Polling:**
-```http
-GET /job
-Authorization: Bearer <jwt_token>
+this will start the Worker in the background and will save the output into a log.txt file. If you want to end the process you first have to find the process with 
+```shell
+ps aux | grep main.py
 ```
-
-**Result Submission:**
-```http
-POST /job
-Authorization: Bearer <jwt_token>
-Content-Type: multipart/form-data
-
-image_id: job_id
-result: generated_image.png
+which will return the process ID (PID). Secondly use the 
+```shell
+kill [PID]
 ```
+command to end the process. 
+After receiving no job for 1 hour the program will automatically restart to free up all the VRAM. To manually restart the program, you will have to end it and start again. 
 
-### Testing Locally
+### Testing 
 
-For development and testing:
-
-```bash
-cd GPU_Server/testing
-python test_main.py
+The included `testing/test_server.py` script, is a lightweight FastAPI test backend used for local testing. It issues image jobs (image bytes + metadata headers), cycles test workflows and sample metadata and accepts multipart uploads of generated results which it stores in `testing/generated_results`. You can add your own test images in the `testing/test_images` folder. The number of jobs per Workflow as well as all the available Workflows can be adjusted in the `testing/config.toml` file. 
+Start the testing backend locally with `python test_server.py` and start the Worker in test mode by adding a -t or -test to the start command: 
+```shell
+python main.py -t 
 ```
+For information about your CPU and GPU you can use the `testing/test_mem.py` script. The script will display information about CPU, GPU, RAM and VRAM usage and additional information about your hardware this may be helpful for debugging. 
 
-This will:
-- Load a test image from the specified path
-- Process it through the selected workflow
-- Save the result to `output_images/`
 
-## Explanation of Image Generation
 
-### How Stable Diffusion Works
 
-Stable Diffusion is a **latent diffusion model** that generates images through a process of controlled noise removal:
+## For Enthusiasts and Developers
 
-#### 1. **Text Encoding**
-- Input text prompt is converted to numerical embeddings using CLIP
-- These embeddings guide the generation process
+This section is aimed at anyone who wants to contribute to the code or delve deeper into the technical details. We hope to guide possible future development with the work we did. See the text below as for why specific choices were made.
 
-#### 2. **Latent Space Processing**  
-- Instead of working directly with pixels, the model operates in a compressed "latent space"
-- A Variational Autoencoder (VAE) handles encoding/decoding between pixel and latent space
-- This makes the process much more computationally efficient
+### AI Pipeline and Generation Process
 
-#### 3. **Diffusion Process**
-- Starts with random noise in latent space
-- Iteratively removes noise over multiple steps (typically 20-50)
-- Each step is guided by the text prompt and control inputs
-- A U-Net neural network predicts what noise to remove at each step
+The AI pipeline is based on **ComfyUI**. The detailed generation process includes the following steps:
 
-#### 4. **Control Mechanisms**
-Our system uses several control mechanisms for better results:
+1.  **Background Removal and Image Manipulation:** The background of the input image is removed. Slight image manipulation places the depth map onto a grainy background.
+    * **Why?** We found that removing the background elimantes the need for a clean, perfect background, if unavailable. Using a depth map, which is mostly white/light grey forces the diffusion model to 1) abide by contour limits introduced by the color difference (important for character conistency) and 2) to not generate a result which uses the texture of the original image (like fur). This is especially important, since as of the completion of the project, Chroma is not yet compatible with Controlnets, who would be responsible for outline/character consistency.
+2.  **LLM Prompt Generation:** A Large Language Model (LLM) receives the input image, describes it, and adapts the description with "X-Ray" prompts to generate an optimized prompt for Chroma.
+    * **Why?** Using an LLM allows for a more tailored prompt, identifying each animal and possible anomalies in limb length, ear size etc. Quirks of each individual plush can be considered and adjustet.
+3.  **Image Generation:** The input image along with the positive, LLM-generated prompt are passed to the Chroma model, which generates the "x-ray image."
+4.  **Overlay Addition:** Finally, an overlay is added to the generated image.
+    * **Why?** This does not influence the result, but adds to the "realness" of the x-ray, at least in our application. This step can easily ommitted or adjustet to overlay different text/images.
+5.  **Optimization:** A Turbo Low Step LoRA is used for process optimization.
+    * **Why?** Using a Low Step LoRA simply allowed for faster, higher quality results. Without this, generation times would be unfeasible for our application. Since impact on quality is minimal, we urge you to keep this/something similiar.
 
-- **ControlNet**: Guides generation using depth maps from the original teddy bear image
-- **IP-Adapter**: Ensures the generated X-ray maintains visual similarity to the input
-- **Prompt Engineering**: Carefully crafted prompts emphasize medical/X-ray aesthetics
+    
+As for model choice: The model we finally settled on to handle the bulk of the generation is Chroma. The reasons for this are quite simple:
 
-#### 5. **Post-Processing**
-- Generated latent is decoded back to pixel space using VAE
-- Text overlay adds patient information
-- Final compositing with X-ray template/watermark
+1. Prompt following is vastly superior compared to FLUX base/SD
+2. Uncensored nature allows for bone/skull/medically accurate generation
+3. License.
 
-### X-Ray Generation Pipeline
+Unfortunately other capable models released around the same time, such as Qwen Image Edit, FLUX Kontext, SeaDream 4.0 or WAN2.1/2.2, while capable, seem to be heavily censored, especially those from China.
 
-```
-Input Image → Background Removal → Depth Estimation → 
-Text Analysis → Stable Diffusion → Post-Processing → Final X-Ray
-```
 
-1. **Preprocessing**: Remove background, resize, analyze content
-2. **AI Description**: Use vision model (Janus) to describe the teddy bear
-3. **Diffusion Generation**: Create X-ray using controlled diffusion process
-4. **Postprocessing**: Add patient text, composite with medical template
 
-### Why This Approach Works
+### Adding Fractures to the X-Ray Images
 
-- **Anatomical Plausibility**: AI models trained on diverse data can infer reasonable skeletal structures
-- **Style Transfer**: Models can apply X-ray visual characteristics while preserving shape
-- **Control**: Multiple guidance mechanisms ensure output matches input teddy bear
-- **Safety**: System avoids scary/inappropriate content through careful prompt engineering
 
-## Adding Custom Workflows
+After the x-ray image has been generated, the web interface allows users to manually draw in fractures to make the images even more realistic.
 
-Want to add your own AI workflow? Follow these steps:
+This functionality is implemented with a lightweight Python script. The workflow is as follows:
 
-### 1. Create Workflow File
-Create a new file in `workflow_scripts/YourWorkflowName.py`:
+1. A mask is drawn onto the generated x-ray image at the position where the fracture should appear.
+2. The script automatically samples two points from the surrounding image background.
+3. Based on these samples, the mask is recolored so that it blends seamlessly into the x-ray background.
+4. The result is a visually consistent "fracture" overlay that appears naturally integrated into the final x-ray image.
+
+
+### How to create your own workflow 
+Creating a workflow in ComfyUI is quite intuitive. You start by connecting different nodes that represent various steps in the image generation process: for example, loading a model, setting prompts, and defining image outputs. Each node can be customized to adjust parameters like resolution, seed, or sampling method. Once your nodes are connected, you can easily preview and generate images directly within the interface.
+For more details and documentation, visit the official ComfyUI website: https://comfyui.org
+
+
+#### How to implement your own workflow into the code
+You need the ComfyUI workflow which you want to implement and you need a tool to export the workflow into a python script (https://github.com/pydn/ComfyUI-to-Python-Extension). 
+1.	Export the workflow into a python script 
+2.	Open the exported file and go to the `main` function where you copy all the code that is executed in the `with torch` block (without copying this line). 
+```python 
+with torch.inference_mode():
+  # copy all code after this line (from the main function)
+``` 
+
+Theoretically this would work if you continue with steps 6 to 11, but this will reload the models which easily doubles your generating time. So, we will now move code into the `load_once` function to not reloaded models constantly (recommended).
+
+3.	By using `Ctrl + f` search for `NODE_CLASS_MAPPINGS` and move all attributes that get initialized with this string into the `load_once()` function. (not a real time saver but needed for the next steps)
+4.	Now search for `.safetensors` and move all lines of code into the `load_once()` function
+5.	Now search for `model_name` or `modelloader` and move all lines of code into the `load_once()` function
+
+Now all the models should only be loaded once and therefore save time. Optionally you can move all the code that is not directly or indirectly dependent on the input image (e.g. a watermark image) into the `load_once()` function, but if you are not certain which code to move you can skip this step. 
+
+6.	Locate your input image, for that search for the first `loadimage_X` (X = a number, e.g. 17) and change the code to 
 
 ```python
-import os
-import sys
-import io
-from typing import Any, Union, Sequence, Mapping
-import torch
-from PIL import Image  
-import random
-
-# Add parent directory to sys.path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
-
-from functions import Functions
-
-class YourWorkflowName:
-    def __init__(self):
-        self.functions = Functions()
-        self.functions.add_comfyui_directory_to_sys_path()
-        self.functions.add_extra_model_paths()
-        try:
-            from nodes import NODE_CLASS_MAPPINGS
-            self.NODE_CLASS_MAPPINGS = NODE_CLASS_MAPPINGS
-        except ImportError:
-            print("Could not import NODE_CLASS_MAPPINGS from nodes.")
-            self.NODE_CLASS_MAPPINGS = {}
-        self.functions.import_custom_nodes()
-        self.config = self.load_once()
-
-    def load_once(self):
-        """Load static resources once for efficiency."""
-        # Load models, static prompts, etc.
-        return {k: v for k, v in locals().items() if k != "self"}
-
-    def generate(self, workflow_name: str, image_bytes: bytes, 
-                animal_type: str, first_name: str, last_name: str, 
-                animal_name: str) -> io.BytesIO:
-        """Generate X-ray image from input."""
-        # Your workflow implementation here
-        result = self.functions.converte_image(generated_image)
-        return result
+loadimage_X = loadimage.load_image(image=tmp_path) # where X is the same number as before
 ```
-
-### 2. Export ComfyUI Workflow
-1. Create your workflow in ComfyUI interface
-2. Export as Python script
-3. Follow the integration steps in the template comments
-
-### 3. Register Workflow
-Add to `dispatcher.py`:
-
+If you are using constant images like a watermark or inputs for an IP-Adapter, make sure you input the correct path to set images. If you use text on the image, you can use the
 ```python
-from workflow_scripts.YourWorkflowName import YourWorkflowName
-
-class WorkflowDispatcher:
-    def __init__(self):
-        self.workflow_class = {
-            "FLUX_Kontext": FLUX_Kontext, 
-            "IP_Adapter_SDXL": IP_Adapter_SDXL,
-            "YourWorkflowName": YourWorkflowName  # Add here
-        }
+format_text_for_field(your_text, line_length, number_of_lines)
 ```
+function to format the text correctly, the inputs are the string, the length of a line and the number of lines (functions are located in the `functions.py` file).
 
-### 4. Update CLI Options
-Add to `main.py` choices:
+7.	Remove the `saveimge_Y` (Y = a number, e.g. 34) attribute at the end of the code because we don't need to save the image in the workflow, we will return it as a buffer
+8.	Change in `converte_image(generatedImage)` `generatedImage` to the first attribute above this line of code (e.g. `converte_image(textonimage_142)`)
+9.	Change the name of the class and the file to the name of your workflow, e.g. `FLUX_Kontext`
 
+Now go to the `dispatcher.py` file and follow this last steps.
+
+10.	Import the new workflow with 
 ```python
-@click.option(
-    '--workflow',
-    type=click.Choice(['IP_Adapter_SDXL', 'FLUX_Kontext', 'YourWorkflowName'], 
-                      case_sensitive=False),
-    prompt='Please choose a workflow',
-    help='The workflow to use for image generation'
-)
+workflow_scripts.[workflow name] import [Class name]
 ```
 
-### Integration Guidelines
+11.	And add the `“[workflow name]”: [Class name],` into the workflow_class attribute 
 
-- **Static Resources**: Load models/prompts in `load_once()` for efficiency
-- **Input Handling**: Use provided utility functions for image processing
-- **Error Handling**: Include proper error handling and logging
-- **Memory Management**: Use `torch.inference_mode()` for memory efficiency
-- **Output Format**: Return `io.BytesIO` buffer with PNG image data
+If you want, you can change the default workflow in `main.py`. If you want to use the local test program to test your new workflow you have to add your workflows name to the `TEST_WORKFLOWS` list in `test_server.py`. 
 
-## Testing
+### Contribution guidelines
+Please contribute workflows, tests, and fixes - thank you! To add a new workflow, please follow the steps in the subsection [above](#how-to-implement-your-own-workflow-into-the-code). Before opening a pull request, test your implementation and ensure any new dependencies are documented in a `README` file. In your pull request description, explain what changed, why, and provide steps to reproduce. If the change affects runtime requirements (e.g., ComfyUI version or new model files), list them clearly. Small, focused pull requests that add a single workflow or fix a single issue are preferred, as this makes reviewing them faster and safer.
 
-### Unit Testing
-```bash
-cd GPU_Server
-python -m pytest tests/ -v
-```
-
-### Integration Testing  
-```bash
-cd GPU_Server/testing
-python test_main.py --workflow FLUX_Kontext
-```
-
-### Performance Testing
-Monitor GPU memory usage and generation times:
-```bash
-nvidia-smi -l 1  # Monitor GPU usage
-```
-
-### Test Cases Covered
-- ✅ Model loading and initialization
-- ✅ Image preprocessing pipeline
-- ✅ AI generation workflow
-- ✅ Post-processing and text overlay
-- ✅ Error handling and recovery
-- ✅ Memory management
-
-## Contributions
-
-We welcome contributions to improve the Teddy Bear Hospital project! Here's how you can help:
-
-### 🐛 Bug Reports
-- Use GitHub Issues to report bugs
-- Include system specifications and error logs
-- Provide steps to reproduce the issue
-
-### 🚀 Feature Requests
-- Suggest new AI models or workflows
-- Propose UI/UX improvements
-- Request new customization options
-
-### 💻 Code Contributions
-
-1. **Fork the repository**
-2. **Create feature branch**: `git checkout -b feature/amazing-feature`
-3. **Follow coding standards**:
-   - Use descriptive variable names
-   - Add docstrings to functions
-   - Include type hints where possible
-   - Follow PEP 8 style guidelines
-
-4. **Test your changes**:
-   - Run existing tests
-   - Add tests for new features
-   - Test with different GPU configurations
-
-5. **Submit pull request**:
-   - Clear description of changes
-   - Reference related issues
-   - Include performance impact assessment
-
-### 📖 Documentation
-- Improve installation guides
-- Add workflow tutorials
-- Translate documentation
-- Create video tutorials
-
-### 🎨 Creative Contributions
-- Design new X-ray templates
-- Create example prompts
-- Develop new AI workflows
-- Improve visual aesthetics
-
-### Development Guidelines
-
-- **Code Quality**: All contributions should maintain high code quality
-- **Performance**: Consider memory usage and generation speed
-- **Compatibility**: Ensure compatibility across different GPU types
-- **Safety**: Maintain child-friendly, appropriate content generation
-- **Documentation**: Update documentation for any new features
 
 ## License
 
 This project uses a dual licensing approach:
 
-### 📄 **Code License: MIT License**
+### **Code License: MIT License**
 All custom code in this repository is released under the MIT License:
 
 ```
@@ -512,21 +212,22 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software...
 ```
 
-### 🤖 **AI Model Licenses**
+### **AI Model Licenses**
 Different AI models have their own licensing terms:
 
-#### Stable Diffusion Models
+#### Diffusion Models
 - **SDXL Base/Refiner**: CreativeML Open RAIL-M License
 - **FLUX Models**: Apache 2.0 License
+- **Chroma** : Apache-2.0 License
 - **Custom LoRAs**: Individual licensing varies
 
 #### Usage Rights for AI Models
-- ✅ **Non-commercial use**: Freely allowed for educational/research purposes
-- ✅ **Educational institutions**: Can use for events like Teddy Bear Hospital
-- ⚠️ **Commercial use**: Check individual model licenses
-- ❌ **Prohibited uses**: Harmful, illegal, or inappropriate content generation
+-  **Non-commercial use**: Freely allowed for educational/research purposes
+-  **Educational institutions**: Can use for events like Teddy Bear Hospital
+-  **Commercial use**: Check individual model licenses
+-  **Prohibited uses**: Harmful, illegal, or inappropriate content generation
 
-### 🏥 **Project-Specific Terms**
+### **Project-Specific Terms**
 
 This software is specifically designed for:
 - Educational and medical outreach programs
@@ -540,22 +241,23 @@ This software is specifically designed for:
 - **PyTorch**: BSD License  
 - **CLIP**: MIT License
 - **Custom Nodes**: Various licenses (see individual repositories)
+- **DeepSeek / Janus-Pro** (used by FLUX_Kontext): model card on Hugging Face — https://huggingface.co/deepseek-ai/Janus-Pro-1B and repository: https://github.com/deepseek-ai/Janus (check the model and code licenses; code repo lists MIT for code and a model license file)
+- **Ollama** (used as an LLM host/inference provider): https://ollama.com/ and documentation https://docs.ollama.com/ (check provider terms and any model licenses for LLMs you pull via Ollama)
+
+Please verify the license and usage terms on each model card or provider page before deploying or redistributing any model artifacts.
 
 ### Disclaimer
 
 This project generates artistic interpretations of X-ray images for entertainment and educational purposes only. Generated images are not medical diagnostics and should never be used for actual medical assessment or treatment decisions.
 
----
 
-## 🎉 Acknowledgments
+## Acknowledgments
 
-Special thanks to:
-- **Heidelberg University** for supporting this internship project
-- **ComfyUI Community** for the excellent workflow management system
-- **Stability AI** for open-sourcing Stable Diffusion models
-- **Medical students and volunteers** who make Teddy Bear Hospitals possible
-- **Children and families** who participate in these wonderful events
+- Dr. Dominic Kempf, who hosted this beginner internship
+- The student contributors (team members) who designed and implemented the workflows, tests, and integration code.
+- The ComfyUI community and the authors of custom node packs used in this project (see the Installation section for links).
+- Model and dataset providers — in particular Lodestones/Chroma, DeepSeek/Janus, and Stability AI for the Stable Diffusion family of models.
+- The many open-source projects and authors whose work we build upon (PyTorch, Hugging Face, and contributors to various node packs).
+- Medical students and volunteers who organize such events for children.
 
----
-
-**Made with ❤️ for children's healthcare education** 
+If you or your project contributed to this repository and you'd like your name or organization added here, please open a pull request with the suggested acknowledgement text.
